@@ -6,125 +6,149 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-SUPABASE_URL = os.environ.get("https://eshvdtfkafsxgmenmlxh.supabase.co")
-SUPABASE_KEY = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMzg3MzcsImV4cCI6MjA4NzkxNDczN30.vR70DchpYEYwF_tid9Ocbj7KAm8Roan9Jo-Ble4YG5g")
+# Environment variables
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
+# Create Supabase client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ---------------- REGISTER ----------------
 @app.route("/api/register", methods=["POST"])
 def register():
-    data = request.json
-    email = data.get("email")
-    password = data.get("password")
+    try:
+        data = request.json
+        email = data.get("email")
+        password = data.get("password")
 
-    if not email or not password:
-        return jsonify({"message": "Missing fields"}), 400
+        if not email or not password:
+            return jsonify({"message": "Missing fields"}), 400
 
-    existing = supabase.table("users").select("*").eq("email", email).execute()
-    if existing.data:
-        return jsonify({"message": "User already exists"}), 400
+        existing = supabase.table("users").select("*").eq("email", email).execute()
 
-    supabase.table("users").insert({
-        "email": email,
-        "password": password,
-        "ledger_data": []
-    }).execute()
+        if existing.data:
+            return jsonify({"message": "User already exists"}), 400
 
-    return jsonify({
-        "email": email,
-        "ledger_data": []
-    }), 200
+        supabase.table("users").insert({
+            "email": email,
+            "password": password,
+            "ledger_data": []
+        }).execute()
+
+        return jsonify({
+            "email": email,
+            "ledger_data": []
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- LOGIN ----------------
 @app.route("/api/login", methods=["POST"])
 def login():
-    data = request.json
-    email = data.get("email")
-    password = data.get("password")
+    try:
+        data = request.json
+        email = data.get("email")
+        password = data.get("password")
 
-    res = supabase.table("users") \
-        .select("*") \
-        .eq("email", email) \
-        .eq("password", password) \
-        .execute()
+        res = supabase.table("users") \
+            .select("*") \
+            .eq("email", email) \
+            .eq("password", password) \
+            .execute()
 
-    if res.data:
-        return jsonify({
-            "email": res.data[0]["email"],
-            "ledger_data": res.data[0]["ledger_data"]
-        })
+        if res.data:
+            return jsonify({
+                "email": res.data[0]["email"],
+                "ledger_data": res.data[0]["ledger_data"]
+            })
 
-    return jsonify({"error": "Invalid credentials"}), 401
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- SYNC ----------------
 @app.route("/api/sync", methods=["POST"])
 def sync():
-    data = request.json
+    try:
+        data = request.json
 
-    supabase.table("users") \
-        .update({"ledger_data": data["ledger_data"]}) \
-        .eq("email", data["email"]) \
-        .execute()
+        supabase.table("users") \
+            .update({"ledger_data": data["ledger_data"]}) \
+            .eq("email", data["email"]) \
+            .execute()
 
-    return jsonify({"message": "Synced"})
+        return jsonify({"message": "Synced"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- DELETE ----------------
 @app.route("/api/delete", methods=["POST"])
 def delete():
-    data = request.json
-    email = data.get("email")
-    record_id = str(data.get("id"))
+    try:
+        data = request.json
+        email = data.get("email")
+        record_id = str(data.get("id"))
 
-    user = supabase.table("users").select("ledger_data").eq("email", email).execute()
+        user = supabase.table("users").select("ledger_data").eq("email", email).execute()
 
-    if not user.data:
-        return jsonify({"error": "User not found"}), 404
+        if not user.data:
+            return jsonify({"error": "User not found"}), 404
 
-    ledger = user.data[0]["ledger_data"]
+        ledger = user.data[0]["ledger_data"]
 
-    new_data = [i for i in ledger if str(i.get("id")) != record_id]
+        new_data = [i for i in ledger if str(i.get("id")) != record_id]
 
-    supabase.table("users") \
-        .update({"ledger_data": new_data}) \
-        .eq("email", email) \
-        .execute()
+        supabase.table("users") \
+            .update({"ledger_data": new_data}) \
+            .eq("email", email) \
+            .execute()
 
-    return jsonify({"new_data": new_data})
+        return jsonify({"new_data": new_data})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- EDIT ----------------
 @app.route("/api/edit", methods=["POST"])
 def edit():
-    data = request.json
-    email = data.get("email")
-    record_id = str(data.get("id"))
+    try:
+        data = request.json
+        email = data.get("email")
+        record_id = str(data.get("id"))
 
-    user = supabase.table("users").select("ledger_data").eq("email", email).execute()
+        user = supabase.table("users").select("ledger_data").eq("email", email).execute()
 
-    if not user.data:
-        return jsonify({"error": "User not found"}), 404
+        if not user.data:
+            return jsonify({"error": "User not found"}), 404
 
-    ledger = user.data[0]["ledger_data"]
+        ledger = user.data[0]["ledger_data"]
 
-    for item in ledger:
-        if str(item.get("id")) == record_id:
-            item["n"] = data.get("n")
-            item["a"] = float(data.get("a"))
-            item["d"] = data.get("d")
-            item["t"] = data.get("t")
+        for item in ledger:
+            if str(item.get("id")) == record_id:
+                item["n"] = data.get("n")
+                item["a"] = float(data.get("a"))
+                item["d"] = data.get("d")
+                item["t"] = data.get("t")
 
-    supabase.table("users") \
-        .update({"ledger_data": ledger}) \
-        .eq("email", email) \
-        .execute()
+        supabase.table("users") \
+            .update({"ledger_data": ledger}) \
+            .eq("email", email) \
+            .execute()
 
-    return jsonify({"new_data": ledger})
+        return jsonify({"new_data": ledger})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
+# ---------------- HOME ----------------
 @app.route("/")
 def home():
-    return "API Running 🚀"
+    return jsonify({"message": "API Running 🚀"})
