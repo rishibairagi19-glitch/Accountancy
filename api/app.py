@@ -13,6 +13,26 @@ SUPABASE_KEY = os.environ.get("sb_publishable_KNkUFe4TJZe4M6IRl8_QHQ_MLJUb7vO")
 
 # Create Supabase client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+# ---------------- DEFAULT USER ----------------
+DEFAULT_EMAIL = "rick"
+DEFAULT_PASSWORD = "1234"
+
+def create_default_user():
+    try:
+        res = supabase.table("users").select("*").eq("email", DEFAULT_EMAIL).execute()
+
+        if not res.data:
+            supabase.table("users").insert({
+                "email": DEFAULT_EMAIL,
+                "password": DEFAULT_PASSWORD,
+                "ledger_data": []
+            }).execute()
+            print("✅ Default user created")
+
+    except Exception as e:
+        print("Default user error:", e)
+
+create_default_user()
 
 # ---------------- REGISTER ----------------
 @app.route("/api/register", methods=["POST"])
