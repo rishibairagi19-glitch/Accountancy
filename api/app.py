@@ -6,16 +6,16 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Environment variables
+# ---------------- SUPABASE CONFIG ----------------
 SUPABASE_URL = os.environ.get("https://eshvdtfkafsxgmenmlxh.supabase.co")
 # SUPABASE_KEY = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjMzODczNywiZXhwIjoyMDg3OTE0NzM3fQ.KHOmVF46wf4B0QJaSAU9yfNSYW3YNnccPB32A3CHlKo")
 SUPABASE_KEY = os.environ.get("sb_publishable_KNkUFe4TJZe4M6IRl8_QHQ_MLJUb7vO")
 
-# Create Supabase client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 # ---------------- DEFAULT USER ----------------
-DEFAULT_EMAIL = "rick"
-DEFAULT_PASSWORD = "1234"
+DEFAULT_EMAIL = "admin@rick.com"
+DEFAULT_PASSWORD = "YWRtaW4xMjM="  # base64 of admin123
 
 def create_default_user():
     try:
@@ -27,7 +27,7 @@ def create_default_user():
                 "password": DEFAULT_PASSWORD,
                 "ledger_data": []
             }).execute()
-            print("✅ Default user created")
+            print("Default user created")
 
     except Exception as e:
         print("Default user error:", e)
@@ -59,11 +59,10 @@ def register():
         return jsonify({
             "email": email,
             "ledger_data": []
-        }), 200
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # ---------------- LOGIN ----------------
 @app.route("/api/login", methods=["POST"])
@@ -90,8 +89,7 @@ def login():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-# ---------------- SYNC ----------------
+# ---------------- SYNC LEDGER ----------------
 @app.route("/api/sync", methods=["POST"])
 def sync():
     try:
@@ -106,7 +104,6 @@ def sync():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # ---------------- DELETE ----------------
 @app.route("/api/delete", methods=["POST"])
@@ -134,7 +131,6 @@ def delete():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # ---------------- EDIT ----------------
 @app.route("/api/edit", methods=["POST"])
@@ -168,8 +164,12 @@ def edit():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 # ---------------- HOME ----------------
 @app.route("/")
 def home():
-    return jsonify({"message": "API Running 🚀"})
+    return jsonify({"message": "Rick Accountancy API Running"})
+
+# ---------------- RUN SERVER ----------------
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
