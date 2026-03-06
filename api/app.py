@@ -8,8 +8,8 @@ CORS(app)
 
 # ---------------- SUPABASE CONFIG ----------------
 SUPABASE_URL = os.environ.get("https://eshvdtfkafsxgmenmlxh.supabase.co")
-# SUPABASE_KEY = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjMzODczNywiZXhwIjoyMDg3OTE0NzM3fQ.KHOmVF46wf4B0QJaSAU9yfNSYW3YNnccPB32A3CHlKo")
-SUPABASE_KEY = os.environ.get("sb_publishable_KNkUFe4TJZe4M6IRl8_QHQ_MLJUb7vO")
+SUPABASE_KEY = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjMzODczNywiZXhwIjoyMDg3OTE0NzM3fQ.KHOmVF46wf4B0QJaSAU9yfNSYW3YNnccPB32A3CHlKo")
+#SUPABASE_KEY = os.environ.get("sb_publishable_KNkUFe4TJZe4M6IRl8_QHQ_MLJUb7vO")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
