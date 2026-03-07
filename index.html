@@ -102,6 +102,18 @@
 <div id="dashboard-view">
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
+    <div>
+        <span style="color: var(--p); font-weight: 900; font-family: 'Outfit';">RICK'S VAULT</span>
+        <div style="font-size:12px; opacity:0.8;">
+            Logged in: <span id="userEmail"></span>
+        </div>
+    </div>
+
+    <div>
+        <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:20px; margin-right:15px;">🌓</button>
+        <span onclick="logout()" style="color: var(--d); cursor: pointer; font-weight:bold;">LOCK 🔒</span>
+    </div>
+</div>
             <span style="color: var(--p); font-weight: 900; font-family: 'Outfit';">RICK'S VAULT</span>
             <div>
                 <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:20px; margin-right:15px;">🌓</button>
@@ -208,7 +220,7 @@
 let currentUser = null, db = [];
 //const API_URL = "http://rick-pc:5000/api";
 //const API_URL = "https://accountancy-pro.onrender.com/api";
-const API_URL = "/api";
+const API_URL = "https://accountancy-omega.vercel.app/api";
 const SESSION_TIME = 30 * 60 * 1000;
 let BUDGET_LIMIT = 30000;
 
@@ -267,6 +279,9 @@ async function handleLogin() {
     if(res.ok) {
         currentUser = data.email;
         db = data.ledger_data;
+
+        document.getElementById("userEmail").innerText = currentUser;
+
         localStorage.setItem("rickUser", currentUser);
         localStorage.setItem("rickData", JSON.stringify(db));
         localStorage.setItem("rickLoginTime", Date.now().toString());
@@ -581,13 +596,14 @@ function downloadPDF() {
         }
     });
 
-    doc.save(`Rick_Ledger_Report_${Date.now()}.pdf`);
+    const pdfBlob = doc.output("blob");
+const url = URL.createObjectURL(pdfBlob);
+
+const a = document.createElement("a");
+a.href = url;
+a.download = `Rick_Ledger_Report_${Date.now()}.pdf`;
+a.click();
 }
 </script>
 </body>
-
 </html>
-
-
-
-
