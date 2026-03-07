@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accountancy X | Rick's PDF Ledger</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #22C55E; --bg-login: linear-gradient(180deg, #E2F2E9 0%, #FFFFFF 100%);
+            --p: #6366f1; --s: #10b981; --d: #f43f5e; --blue: #3b82f6; --income: #fbbf24; 
+            --bg-dash: #0b0e14; --card: #161b22; --text: #ffffff; --input-bg: #0d1117;
+        }
+
+        /* Light Mode Classes */
+        body.light-mode {
+            --bg-dash: #f3f4f6; --card: #ffffff; --text: #111827; --input-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; transition: 0.3s; }
+        body { margin: 0; min-height: 100vh; font-family: 'Inter', sans-serif; overflow-x: hidden; background: var(--bg-dash); color: var(--text); }
+
+        /* --- DASHBOARD UI --- */
+        #dashboard-view { padding: 15px; display: none; }
+        .container { max-width: 800px; margin: auto; }
+        
+        /* 6-Box Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .stat-box small { font-size: 10px; text-transform: uppercase; opacity: 0.7; font-weight: bold; }
+        .stat-box b { display: block; font-size: 16px; margin-top: 5px; }
+
+        /* Progressive Budget Bar */
+        .budget-container { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .budget-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; font-weight: bold; }
+        .progress-bg { background: rgba(0,0,0,0.2); height: 12px; border-radius: 10px; overflow: hidden; }
+        .progress-fill { background: var(--p); height: 100%; width: 0%; transition: 0.5s width ease-in-out; }
+
+        .dash-input, .dash-select, .s-input { width: 100%; background: var(--input-bg); border: 1px solid #444; color: var(--text); padding: 12px; border-radius: 10px; margin-top: 8px; outline: none; }
+        .entry-form, .search-panel, .table-container { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        
+        .btn-main, .btn-add, .btn-pdf { cursor: pointer; border: none; font-weight: bold; }
+        .btn-add { background: var(--p); width: 100%; padding: 15px; border-radius:15px; color:white; margin-top:10px; }
+        .btn-pdf { background: var(--d); color: white; padding: 12px; border-radius: 12px; width: 100%; margin-top: 15px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: rgba(0,0,0,0.1); padding: 12px; color: var(--p); text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+        #editModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; }
+
+        /* Auth View Style */
+        .auth-container { background: var(--bg-login); display: flex; justify-content: center; min-height: 100vh; color: #111827; }
+        .iphone-ui { width: 100%; max-width: 430px; padding: 40px 24px; }
+        .btn-main { width: 100%; background: var(--primary); color: white; padding: 18px; border-radius: 15px; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div id="auth-view" class="auth-container">
+    <div class="iphone-ui">
+
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px;">
+            <div style="width: 35px; height: 35px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">A</div>
+            <div style="font-size:24px; font-weight:700;">Accountancy</div>
+        </div>
+
+        <!-- LOGIN VIEW -->
+        <div id="login-view">
+            <h1 style="text-align:center;">Vault Login</h1>
+            <input type="email" id="lEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
+            <input type="password" id="lPass" class="dash-input" style="background:white; color:#000" placeholder="Password" onkeydown="if(event.key==='Enter'){handleLogin()}">
+            
+            <button class="btn-main" style="margin-top:20px" onclick="handleLogin()">Login</button>
+
+            <p style="text-align:center; margin-top:15px;">
+                New User? 
+                <span onclick="showSignup()" style="color:var(--primary); font-weight:bold; cursor:pointer;">Create Account</span>
+            </p>
+        </div>
+
+        <!-- SIGNUP VIEW -->
+        <div id="signup-view" style="display:none;">
+            <h1 style="text-align:center;">Create Account</h1>
+
+            <input type="email" id="sEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
+            <input type="password" id="sPass" class="dash-input" style="background:white; color:#000" placeholder="Password">
+
+            <button class="btn-main" style="margin-top:20px" onclick="handleSignup()">Sign Up</button>
+
+            <p style="text-align:center; margin-top:15px;">
+                Already have account? 
+                <span onclick="showLogin()" style="color:var(--primary); font-weight:bold; cursor:pointer;">Login</span>
+            </p>
+        </div>
+
+    </div>
+</div>
+<div id="dashboard-view">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
+            <span style="color: var(--p); font-weight: 900; font-family: 'Outfit';">RICK'S VAULT</span>
+            <div>
+                <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:20px; margin-right:15px;">🌓</button>
+                <span onclick="logout()" style="color: var(--d); cursor: pointer; font-weight:bold;">LOCK 🔒</span>
+            </div>
+        </div>
+
+        <div class="budget-container">
+            <div class="budget-header">
+                <span>MONTHLY EXPENSE TARGET</span>
+                <span id="budgetPercent">0%</span>
+            </div>
+            <div class="progress-bg">
+                <div id="budgetFill" class="progress-fill"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-top: 5px; opacity: 0.8;">
+                <span id="currentExpStatus">Used: ₹0</span>
+                <div style="display:flex; align-items:center; gap:5px;">
+                <span>Limit: ₹</span>
+                <input type="number" id="budgetInput" 
+                    style="width:90px; padding:3px; border-radius:6px; border:1px solid #ccc;"
+                    onchange="updateBudgetLimit()">
+            </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box"><small>Balance</small><b id="netBal" style="color:var(--p)">₹0</b></div>
+            <div class="stat-box"><small>Income</small><b id="totalInc" style="color:var(--s)">₹0</b></div>
+            <div class="stat-box"><small>Expense</small><b id="totalExp" style="color:var(--d)">₹0</b></div>
+            <div class="stat-box"><small>Udhaar Diya</small><b id="totalLent" style="color:var(--blue)">₹0</b></div>
+            <div class="stat-box"><small>Udhaar Mila</small><b id="totalRec" style="color:var(--income)">₹0</b></div>
+            <div class="stat-box"><small>Real Savings</small><b id="realSav" style="color:var(--s)">₹0</b></div>
+        </div>
+
+        <div class="entry-form">
+            <input type="text" id="pName" class="dash-input" placeholder="Source/Name">
+            <input type="number" id="pAmt" class="dash-input" placeholder="Amount">
+            <div style="display:flex; gap:10px;">
+                <input type="date" id="pDate" class="dash-input">
+                <select id="pType" class="dash-select">
+                    <option value="inc">Salary / Income (+)</option>
+                    <option value="exp">Expense (-)</option>
+                    <option value="lent">Lent (Udhaar Diya) (-)</option>
+                    <option value="rec">Lent Back (Wapas Mila) (+)</option>
+                </select>
+            </div>
+            <button class="btn-add" onclick="add()">UPDATE LEDGER</button>
+        </div>
+
+        <div class="search-panel">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span style="font-size:14px; color:var(--p); font-weight:bold;">🔍 ADVANCED SEARCH</span>
+                <span onclick="clearFilters()" style="font-size:11px; color:var(--d); cursor:pointer; font-weight:bold;">RESET</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+                <input type="text" id="sName" class="s-input" placeholder="Name" oninput="render()">
+                <select id="sType" class="s-input" onchange="render()">
+                    <option value="">ALL TYPES</option>
+                    <option value="inc">INCOME</option>
+                    <option value="exp">EXPENSE</option>
+                    <option value="lent">LENT</option>
+                    <option value="rec">LENT BACK</option>
+                </select>
+                <input type="date" id="sFrom" class="s-input" onchange="render()">
+                <input type="date" id="sTo" class="s-input" onchange="render()">
+            </div>
+            <button class="btn-pdf" onclick="downloadPDF()">📄 DOWNLOAD PDF REPORT</button>
+        </div>
+        
+        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+            <table id="myTable">
+                <thead>
+                    <tr><th>NAME</th><th>AMT</th><th>DATE</th><th>EDIT</th><th>DEL</th></tr>
+                </thead>
+                <tbody id="ledgerBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="editModal">
+    <div class="modal-content">
+        <h2 style="margin-top:0; color:var(--income)">Edit Transaction</h2>
+        <input type="hidden" id="editId">
+        <input type="text" id="editName" class="dash-input">
+        <input type="number" id="editAmt" class="dash-input">
+        <input type="date" id="editDate" class="dash-input">
+        <select id="editType" class="dash-select">
+            <option value="inc">Income</option>
+            <option value="exp">Expense</option>
+            <option value="lent">Lent</option>
+            <option value="rec">Lent Back</option>
+        </select>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-add" style="margin-top:0" onclick="saveEdit()">Save</button>
+            <button class="btn-add" style="margin-top:0; background:#444;" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+let currentUser = null, db = [];
+//const API_URL = "http://rick-pc:5000/api";
+//const API_URL = "https://accountancy-pro.onrender.com/api";
+const API_URL = "/api";
+const SESSION_TIME = 30 * 60 * 1000;
+let BUDGET_LIMIT = 30000;
+
+function updateBudgetLimit() {
+    const newLimit = parseFloat(document.getElementById("budgetInput").value);
+    if(isNaN(newLimit) || newLimit <= 0) {
+        alert("Enter valid limit");
+        return;
+    }
+
+    BUDGET_LIMIT = newLimit;
+    localStorage.setItem("rickBudgetLimit", BUDGET_LIMIT);
+    render();
+}
+
+// --- DARK/LIGHT MODE ---
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    localStorage.setItem("rickTheme", document.body.classList.contains('light-mode') ? 'light' : 'dark');
+}
+
+window.onload = function() {
+    if(localStorage.getItem("rickTheme") === 'light') document.body.classList.add('light-mode');
+    
+    const savedUser = localStorage.getItem("rickUser");
+    const savedData = localStorage.getItem("rickData");
+    const loginTime = localStorage.getItem("rickLoginTime");
+
+    if(savedUser && savedData && loginTime) {
+        if(Date.now() - parseInt(loginTime) < SESSION_TIME) {
+            currentUser = savedUser;
+            db = JSON.parse(savedData);
+            document.getElementById('auth-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+            document.getElementById('pDate').valueAsDate = new Date();
+            render();
+        } else { logout(); }
+    }
+        const savedLimit = localStorage.getItem("rickBudgetLimit");
+        if(savedLimit) {
+            BUDGET_LIMIT = parseFloat(savedLimit);
+        }
+        document.getElementById("budgetInput").value = BUDGET_LIMIT;
+
+};
+
+async function handleLogin() {
+    const email = document.getElementById('lEmail').value;
+    const pass = btoa(document.getElementById('lPass').value);
+    const res = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if(res.ok) {
+        currentUser = data.email;
+        db = data.ledger_data;
+        localStorage.setItem("rickUser", currentUser);
+        localStorage.setItem("rickData", JSON.stringify(db));
+        localStorage.setItem("rickLoginTime", Date.now().toString());
+        document.getElementById('auth-view').style.display = 'none';
+        document.getElementById('dashboard-view').style.display = 'block';
+        document.getElementById('pDate').valueAsDate = new Date();
+        render();
+    }
+}
+
+function showSignup(){
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('signup-view').style.display = 'block';
+}
+
+function showLogin(){
+    document.getElementById('signup-view').style.display = 'none';
+    document.getElementById('login-view').style.display = 'block';
+}
+
+async function handleSignup(){
+    const email = document.getElementById('sEmail').value;
+    const pass = btoa(document.getElementById('sPass').value);
+
+    if(!email || !pass){
+        alert("Fill all fields");
+        return;
+    }
+
+    const res = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email, password: pass })
+    });
+
+    const data = await res.json();
+
+    if(res.ok){
+        alert("Account Created Successfully!");
+
+        // Auto Login After Signup
+        currentUser = data.email;
+        db = data.ledger_data || [];
+
+        localStorage.setItem("rickUser", currentUser);
+        localStorage.setItem("rickData", JSON.stringify(db));
+        localStorage.setItem("rickLoginTime", Date.now().toString());
+
+        document.getElementById('auth-view').style.display = 'none';
+        document.getElementById('dashboard-view').style.display = 'block';
+        document.getElementById('pDate').valueAsDate = new Date();
+        render();
+    } else {
+        alert(data.message || "Signup Failed");
+    }
+}
+
+function logout() {
+    localStorage.removeItem("rickUser");
+    localStorage.removeItem("rickData");
+    localStorage.removeItem("rickLoginTime");
+    location.reload();
+}
+
+async function add() {
+    const n = document.getElementById('pName').value.trim();
+    const a = parseFloat(document.getElementById('pAmt').value);
+    const d = document.getElementById('pDate').value;
+    const t = document.getElementById('pType').value;
+
+    if(!n || isNaN(a) || !d) return;
+
+    // ❌ Prevent Duplicate (same name, amount, date, type)
+    const alreadyExists = db.some(item => 
+        item.n === n && 
+        item.a === a && 
+        item.d === d && 
+        item.t === t
+    );
+
+    if(alreadyExists){
+        alert("This entry already exists!");
+        return;
+    }
+
+    // ✅ Add new entry at TOP
+    db.unshift({ 
+        id: Date.now().toString().slice(-6), 
+        n, a, d, t 
+    });
+
+    render();
+
+    await fetch(`${API_URL}/sync`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email: currentUser, ledger_data: db })
+    });
+
+    // Clear fields after add
+    document.getElementById('pName').value = "";
+    document.getElementById('pAmt').value = "";
+}
+
+function render() {
+    const body = document.getElementById('ledgerBody');
+    const sN = document.getElementById('sName').value.toLowerCase();
+    const sT = document.getElementById('sType').value;
+    const sF = document.getElementById('sFrom').value;
+    const sTo = document.getElementById('sTo').value;
+
+    body.innerHTML = '';
+    let tInc = 0, tExp = 0, tLent = 0, tRec = 0;
+    filteredData = [];
+
+    db.forEach(i => {
+        if(i.t==='inc') tInc+=i.a;
+        if(i.t==='exp') tExp+=i.a;
+        if(i.t==='lent') tLent+=i.a;
+        if(i.t==='rec') tRec+=i.a;
+
+        const matchName = i.n.toLowerCase().includes(sN);
+        const matchType = sT === "" || i.t === sT;
+        const matchDate = (!sF || i.d >= sF) && (!sTo || i.d <= sTo);
+
+        if(matchName && matchType && matchDate) {
+            filteredData.push(i);
+            let color = (i.t==='inc'||i.t==='rec') ? 'var(--s)' : 'var(--d)';
+            body.innerHTML = `<tr>
+                <td><b>${i.n}</b></td>
+                <td style="color:${color}">${(i.t==='inc'||i.t==='rec')?'+':'-'}₹${i.a}</td>
+                <td>${i.d}</td>
+                <td><span style="color:orange; cursor:pointer;" onclick="openEdit('${i.id}')">✎</span></td>
+                <td><span style="color:red; cursor:pointer;" onclick="deleteItem('${i.id}')">🗑</span></td>
+            </tr>` + body.innerHTML;
+        }
+    });
+
+    localStorage.setItem("rickData", JSON.stringify(db));
+
+    // Update 6 Boxes
+    document.getElementById('netBal').innerText = `₹${(tInc+tRec)-(tExp+tLent)}`;
+    document.getElementById('totalInc').innerText = `₹${tInc}`;
+    document.getElementById('totalExp').innerText = `₹${tExp}`;
+    document.getElementById('totalLent').innerText = `₹${tLent}`;
+    document.getElementById('totalRec').innerText = `₹${tRec}`;
+    document.getElementById('realSav').innerText = `₹${tInc - tExp}`;
+
+    // Update Progressive Budget
+    const progress = Math.min((tExp / BUDGET_LIMIT) * 100, 100);
+    document.getElementById('budgetFill').style.width = progress + '%';
+    document.getElementById('budgetPercent').innerText = Math.round(progress) + '%';
+    document.getElementById('currentExpStatus').innerText = `Used: ₹${tExp}`;
+    
+    // Change color if limit exceeded
+    document.getElementById('budgetFill').style.background = progress >= 100 ? 'var(--d)' : 'var(--p)';
+}
+
+// Logic for Edit/Delete/PDF remains same as your original code
+async function deleteItem(id) {
+    if(!confirm("Delete?")) return;
+    const res = await fetch(`${API_URL}/delete`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email: currentUser, id: id.toString() })
+    });
+    if(res.ok) {
+        const data = await res.json();
+        db = data.new_data;
+        render();
+    }
+}
+
+function openEdit(id) {
+    const item = db.find(i => i.id.toString() === id.toString());
+    document.getElementById('editId').value = item.id;
+    document.getElementById('editName').value = item.n;
+    document.getElementById('editAmt').value = item.a;
+    document.getElementById('editDate').value = item.d;
+    document.getElementById('editType').value = item.t;
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+async function saveEdit() {
+    const id = document.getElementById('editId').value;
+    const n = document.getElementById('editName').value;
+    const a = document.getElementById('editAmt').value;
+    const d = document.getElementById('editDate').value;
+    const t = document.getElementById('editType').value;
+    const res = await fetch(`${API_URL}/edit`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email: currentUser, id: id.toString(), n, a, d, t })
+    });
+    if(res.ok) {
+        const data = await res.json();
+        db = data.new_data;
+        render();
+        closeModal();
+    }
+}
+
+function clearFilters() {
+    document.getElementById('sName').value = '';
+    document.getElementById('sType').value = '';
+    document.getElementById('sFrom').value = '';
+    document.getElementById('sTo').value = '';
+    render();
+}
+
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text("RICK'S ACCOUNTANCY REPORT", 14, 20);
+
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+
+    const tableRows = [];
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    filteredData.forEach((i, index) => {
+
+        let incomeCol = "";
+        let expenseCol = "";
+
+        if(i.t === 'inc' || i.t === 'rec'){
+            incomeCol = `Rs. ${i.a}`;
+            totalIncome += i.a;
+        }
+        else if(i.t === 'exp' || i.t === 'lent'){
+            expenseCol = `Rs. ${i.a}`;
+            totalExpense += i.a;
+        }
+
+        tableRows.push([
+            index + 1,
+            i.n,
+            incomeCol,
+            expenseCol,
+            i.d,
+            i.t.toUpperCase()
+        ]);
+    });
+
+    // ✅ TOTAL ROW
+    tableRows.push([
+        "",
+        "TOTAL",
+        `Rs. ${totalIncome}`,
+        `Rs. ${totalExpense}`,
+        "",
+        ""
+    ]);
+
+    // ✅ NET BALANCE ROW
+    tableRows.push([
+        "",
+        "NET BALANCE",
+        `Rs. ${totalIncome - totalExpense}`,
+        "",
+        "",
+        ""
+    ]);
+
+    doc.autoTable({
+        head: [['S.No', 'Name', 'Income', 'Expense', 'Date', 'Type']],
+        body: tableRows,
+        startY: 35,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [33, 150, 243],
+            textColor: 255,
+            fontStyle: 'bold'
+        },
+        didParseCell: function (data) {
+
+            // Income column green
+            if (data.column.index === 2 && data.cell.raw !== "") {
+                data.cell.styles.textColor = [0, 128, 0];
+            }
+
+            // Expense column red
+            if (data.column.index === 3 && data.cell.raw !== "") {
+                data.cell.styles.textColor = [200, 0, 0];
+            }
+
+            // TOTAL row styling
+            if (data.row.index === tableRows.length - 2) {
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fillColor = [230, 255, 230];
+            }
+
+            // NET BALANCE row styling
+            if (data.row.index === tableRows.length - 1) {
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fillColor = [255, 248, 220];
+
+                if (data.column.index === 2) {
+                    if (totalIncome - totalExpense >= 0) {
+                        data.cell.styles.textColor = [0, 128, 0];
+                    } else {
+                        data.cell.styles.textColor = [200, 0, 0];
+                    }
+                }
+            }
+        }
+    });
+
+    doc.save(`Rick_Ledger_Report_${Date.now()}.pdf`);
+}
+</script>
+</body>
+</html>
