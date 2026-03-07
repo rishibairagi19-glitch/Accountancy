@@ -30,7 +30,7 @@ def create_default_user():
             print("Default user created")
             
     except Exception as e:
-    print("Error creating default user:", e)      
+        print("Error creating default user:", e)      
 
 create_default_user()
 
