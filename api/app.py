@@ -1,17 +1,18 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from supabase import create_client
+from supabase import create_client, Client
 import os
 
 app = Flask(__name__)
 CORS(app)
 
 # ---------------- SUPABASE CONFIG ----------------
-SUPABASE_URL = os.environ.get("https://eshvdtfkafsxgmenmlxh.supabase.co")
-SUPABASE_KEY = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjMzODczNywiZXhwIjoyMDg3OTE0NzM3fQ.KHOmVF46wf4B0QJaSAU9yfNSYW3YNnccPB32A3CHlKo")
-#SUPABASE_KEY = os.environ.get("sb_publishable_KNkUFe4TJZe4M6IRl8_QHQ_MLJUb7vO")
+# Dashboard se copy karke yahan apni sahi details dalein
+URL = "https://eshvdtfkafsxgmenmlxh.supabase.co"
+KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMzg3MzcsImV4cCI6MjA4NzkxNDczN30.vR70DchpYEYwF_tid9Ocbj7KAm8Roan9Jo-Ble4YG5g" 
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Client initialization
+supabase: Client = create_client(URL, KEY)
 
 # ---------------- DEFAULT USER ----------------
 DEFAULT_EMAIL = "admin@rick.com"
@@ -19,19 +20,25 @@ DEFAULT_PASSWORD = "YWRtaW4xMjM="  # base64 of admin123
 
 def create_default_user():
     try:
+        # Step 1: Check if user exists
         res = supabase.table("users").select("*").eq("email", DEFAULT_EMAIL).execute()
 
         if not res.data:
+            # Step 2: If not, Insert default user
             supabase.table("users").insert({
                 "email": DEFAULT_EMAIL,
                 "password": DEFAULT_PASSWORD,
                 "ledger_data": []
             }).execute()
-            print("Default user created")
-            
-    except Exception as e:
-        print("Error creating default user:", e)      
+            print("--- Default user created successfully ---")
+        else:
+            print("--- Default user already exists ---")
 
+    except Exception as e:
+        # Note: Startup function mein print hi use karein
+        print(f"--- Supabase Connection/Auth Error: {str(e)} ---")
+
+# App start hone par default user check karega
 create_default_user()
 
 # ---------------- REGISTER ----------------
@@ -45,11 +52,13 @@ def register():
         if not email or not password:
             return jsonify({"message": "Missing fields"}), 400
 
+        # Check existing
         existing = supabase.table("users").select("*").eq("email", email).execute()
 
         if existing.data:
             return jsonify({"message": "User already exists"}), 400
 
+        # Insert new user
         supabase.table("users").insert({
             "email": email,
             "password": password,
@@ -78,7 +87,7 @@ def login():
             .eq("password", password) \
             .execute()
 
-        if res.data:
+        if res.data and len(res.data) > 0:
             return jsonify({
                 "email": res.data[0]["email"],
                 "ledger_data": res.data[0]["ledger_data"]
@@ -94,10 +103,12 @@ def login():
 def sync():
     try:
         data = request.json
+        email = data.get("email")
+        ledger = data.get("ledger_data")
 
         supabase.table("users") \
-            .update({"ledger_data": data["ledger_data"]}) \
-            .eq("email", data["email"]) \
+            .update({"ledger_data": ledger}) \
+            .eq("email", email) \
             .execute()
 
         return jsonify({"message": "Synced"})
@@ -119,7 +130,6 @@ def delete():
             return jsonify({"error": "User not found"}), 404
 
         ledger = user.data[0]["ledger_data"]
-
         new_data = [i for i in ledger if str(i.get("id")) != record_id]
 
         supabase.table("users") \
@@ -149,10 +159,10 @@ def edit():
 
         for item in ledger:
             if str(item.get("id")) == record_id:
-                item["n"] = data.get("n")
-                item["a"] = float(data.get("a"))
-                item["d"] = data.get("d")
-                item["t"] = data.get("t")
+                item["n"] = data.get("n") # Name
+                item["a"] = float(data.get("a")) # Amount
+                item["d"] = data.get("d") # Description/Date
+                item["t"] = data.get("t") # Type
 
         supabase.table("users") \
             .update({"ledger_data": ledger}) \
@@ -167,9 +177,13 @@ def edit():
 # ---------------- HOME ----------------
 @app.route("/")
 def home():
-    return jsonify({"message": "Rick Accountancy API Running"})
+    return jsonify({
+        "status": "Online",
+        "message": "Rick Accountancy API is running on Supabase"
+    })
 
 # ---------------- RUN SERVER ----------------
 if __name__ == "__main__":
+    # Render/Railway automatically sets PORT
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
