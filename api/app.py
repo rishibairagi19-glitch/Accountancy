@@ -28,9 +28,9 @@ def create_default_user():
                 "ledger_data": []
             }).execute()
             print("Default user created")
-
+            
     except Exception as e:
-        print("Default user error:", e)
+    print("Error creating default user:", e)      
 
 create_default_user()
 
