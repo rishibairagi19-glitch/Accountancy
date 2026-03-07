@@ -62,7 +62,7 @@ def register():
         })
 
     except Exception as e:
-    return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 # ---------------- LOGIN ----------------
 @app.route("/api/login", methods=["POST"])
