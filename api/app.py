@@ -56,7 +56,7 @@ def register():
         existing = supabase.table("users").select("*").eq("email", email).execute()
 
         if existing.data:
-            return jsonify({"message": "User already exists"}), 400
+            return jsonify({"message": "User already exists-Rick"}), 400
 
         # Insert new user
         supabase.table("users").insert({
