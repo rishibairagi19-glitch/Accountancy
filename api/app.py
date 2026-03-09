@@ -88,10 +88,13 @@ def login():
             .execute()
 
          # Check existing
-        existing = supabase.table("users").select("*").eq("email", email).execute()
-
-        if not existing.data:
-            return jsonify({"message": "Wrong User or Password"}), 400
+        existingu = supabase.table("users").select("*").eq("email", email).execute()
+        existingp = supabase.table("users").select("*").eq("passwird", password).execute()
+        
+        if not existingu.data:
+            return jsonify({"message": "Wrong User Name"}), 400
+        if not existingp.data:
+            return jsonify({"message": "Wrong Password"}), 401
 
         if res.data and len(res.data) > 0:
             return jsonify({
