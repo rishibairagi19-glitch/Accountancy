@@ -86,7 +86,8 @@ def login():
             .eq("email", email) \
             .eq("password", password) \
             .execute()
-        if not email or not password:
+        
+        if not existing.data:
             return jsonify({"message": "Wrong User or Password"}), 400
 
         if res.data and len(res.data) > 0:
