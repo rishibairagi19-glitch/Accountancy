@@ -89,7 +89,7 @@ def login():
 
          # Check existing
         existingu = supabase.table("users").select("*").eq("email", email).execute()
-        existingp = supabase.table("users").select("*").eq("passwird", password).execute()
+        existingp = supabase.table("users").select("*").eq("password", password).execute()
         
         if not existingu.data:
             return jsonify({"message": "Wrong User Name"}), 400
