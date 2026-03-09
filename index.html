@@ -283,6 +283,8 @@ async function handleLogin() {
         document.getElementById('dashboard-view').style.display = 'block';
         document.getElementById('pDate').valueAsDate = new Date();
         render();
+    } else {
+        alert(data.message || "Log-in Failed");
     }
 }
 
@@ -601,3 +603,4 @@ a.click();
 </script>
 </body>
 </html>
+
