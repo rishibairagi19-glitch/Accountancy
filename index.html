@@ -212,9 +212,9 @@
 <script>
     
 let currentUser = null, db = [];
-const API_URL = "http://rick-pc:5000/api";
+//const API_URL = "http://rick-pc:5000/api";
 //const API_URL = "https://accountancy-pro.onrender.com/api";
-//const API_URL = "https://accountancy-omega.vercel.app/api";
+const API_URL = "https://accountancy-omega.vercel.app/api";
 const SESSION_TIME = 30 * 60 * 1000;
 let BUDGET_LIMIT = 30000;
 
@@ -590,10 +590,7 @@ function downloadPDF() {
         }
     });
 
-    // Create PDF blob
-const pdfBlob = doc.output("blob");
-
-// Date-Time filename
+// Generate filename with date-time
 const now = new Date();
 const fileName =
 "Rick_Ledger_" +
@@ -605,21 +602,24 @@ String(now.getMinutes()).padStart(2,'0') + "-" +
 String(now.getSeconds()).padStart(2,'0') +
 ".pdf";
 
-// Create URL
-const url = URL.createObjectURL(pdfBlob);
+// Get PDF as blob
+const pdfBlob = doc.output("blob");
 
-// Download trigger
-const link = document.createElement("a");
-link.href = url;
-link.download = fileName;
-document.body.appendChild(link);
-link.click();
+// Convert blob to base64 (APK friendly)
+const reader = new FileReader();
+reader.readAsDataURL(pdfBlob);
 
-// Cleanup
-setTimeout(() => {
-document.body.removeChild(link);
-URL.revokeObjectURL(url);
-}, 100);
+reader.onloadend = function () {
+    const base64data = reader.result;
+
+    // Force download
+    const link = document.createElement("a");
+    link.href = base64data;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
 }
 </script>
 </body>
