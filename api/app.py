@@ -86,7 +86,10 @@ def login():
             .eq("email", email) \
             .eq("password", password) \
             .execute()
-        
+
+         # Check existing
+        existing = supabase.table("users").select("*").eq("email", email).execute()
+
         if not existing.data:
             return jsonify({"message": "Wrong User or Password"}), 400
 
