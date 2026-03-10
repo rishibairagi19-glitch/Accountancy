@@ -407,7 +407,7 @@ function logout() {
 async function add() {
     const currentMonth = new Date().toISOString().slice(0,7);
 
-const monthlyEntries = db.filter(i => i.m === currentMonth);
+const monthlyEntries = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
 
 if(!USER_VERIFIED && monthlyEntries.length >= ENTRY_LIMIT){
 
@@ -707,3 +707,4 @@ a.click();
 </script>
 </body>
 </html>
+
