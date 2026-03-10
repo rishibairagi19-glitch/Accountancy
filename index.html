@@ -135,6 +135,17 @@
             </div>
         </div>
 
+        <div style="background:var(--card);padding:10px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+    
+            <span style="font-size:13px;font-weight:bold;color:var(--p)">
+                📅 Month:
+            </span>
+
+            <input type="month" id="monthSelector"
+                onchange="changeMonth()"
+                style="padding:5px;border-radius:8px;border:1px solid #ccc;">
+        </div>
+
         <div class="stats-grid">
             <div class="stat-box"><small>Balance</small><b id="netBal" style="color:var(--p)">₹0</b></div>
             <div class="stat-box"><small>Income</small><b id="totalInc" style="color:var(--s)">₹0</b></div>
@@ -223,6 +234,7 @@
 let currentUser = null, db = [];
 let USER_VERIFIED = false;
 let ENTRY_LIMIT = 30;
+let selectedMonth = new Date().toISOString().slice(0,7);
 
 let sortField = "";
 let sortAsc = true;
@@ -231,6 +243,14 @@ let sortAsc = true;
 const API_URL = "/api";
 const SESSION_TIME = 30 * 60 * 1000;
 let BUDGET_LIMIT = 30000;
+
+function changeMonth(){
+
+    selectedMonth = document.getElementById("monthSelector").value;
+
+    render();
+
+}
 
 function sortTable(field){
 
@@ -289,6 +309,7 @@ function toggleTheme() {
 }
 
 window.onload = function() {
+    document.getElementById("monthSelector").value = selectedMonth;
     if(localStorage.getItem("rickTheme") === 'light') document.body.classList.add('light-mode');
     
     const savedUser = localStorage.getItem("rickUser");
@@ -460,7 +481,7 @@ db.unshift({
 
 function render() {
 
-    const currentMonth = new Date().toISOString().slice(0,7);
+    const currentMonth = selectedMonth;
     const monthlyEntries = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
 
     const remaining = ENTRY_LIMIT - monthlyEntries.length;
@@ -469,10 +490,10 @@ function render() {
         const msgBox = document.getElementById("freeLimitMsg");
 
         if(remaining > 0){
-            msgBox.innerHTML = `Free account: ${remaining} entries left this month`;
+            msgBox.innerHTML = `Free account: ${remaining} entries left `;
             msgBox.style.color = "orange";
         }else{
-            msgBox.innerHTML = "Free limit reached (30 entries/month)";
+            msgBox.innerHTML = "Free limit reached (30 entries)";
             msgBox.style.color = "red";
         }
     }else{
@@ -707,5 +728,4 @@ a.click();
 </script>
 </body>
 </html>
-
 
