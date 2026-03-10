@@ -244,39 +244,12 @@ const API_URL = "/api";
 const SESSION_TIME = 30 * 60 * 1000;
 let BUDGET_LIMIT = 30000;
 
-window.addEventListener("online", function(){
-    syncPending();
-});
 function changeMonth(){
 
     selectedMonth = document.getElementById("monthSelector").value;
 
     render();
 
-}
-
-async function syncPending(){
-
-    if(!isOnline() || pendingQueue.length === 0) return;
-
-    db = db.concat(pendingQueue);
-
-    await fetch(`${API_URL}/sync`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            email: currentUser,
-            ledger_data: db
-        })
-    });
-
-    pendingQueue = [];
-    localStorage.removeItem("rickPending");
-
-}
-
-function isOnline(){
-    return navigator.onLine;
 }
 
 function sortTable(field){
@@ -289,7 +262,6 @@ function sortTable(field){
     }
 
     db.sort((a,b)=>{
-        let pendingQueue = JSON.parse(localStorage.getItem("rickPending")) || [];
 
         let valA,valB;
 
@@ -395,7 +367,6 @@ async function handleLogin() {
     } else {
         alert(data.message || "Log-in Failed");
     }
-    syncPending();
 }
 
 function showSignup(){
@@ -497,36 +468,11 @@ db.unshift({
 
     render();
 
-    const newEntry = {
-        id: Date.now().toString().slice(-6),
-        n, a, d, t,
-        m: month
-        };
-
-        db.unshift(newEntry);
-
-        if(isOnline()){
-
-            await fetch(`${API_URL}/sync`,{
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({
-                    email: currentUser,
-                    ledger_data: db
-                })
-            });
-
-        }else{
-
-            pendingQueue.push(newEntry);
-
-            localStorage.setItem("rickPending", JSON.stringify(pendingQueue));
-
-            alert("Offline mode: entry saved locally and will sync later");
-
-        }
-
-        render();
+    await fetch(`${API_URL}/sync`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email: currentUser, ledger_data: db })
+    });
 
     // Clear fields after add
     document.getElementById('pName').value = "";
