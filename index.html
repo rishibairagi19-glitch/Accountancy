@@ -145,6 +145,7 @@
         </div>
 
         <div class="entry-form">
+            <div id="freeLimitMsg" style="font-size:12px;margin-bottom:10px;"></div>
             <input type="text" id="pName" class="dash-input" placeholder="Source/Name">
             <input type="number" id="pAmt" class="dash-input" placeholder="Amount">
             <div style="display:flex; gap:10px;">
@@ -458,15 +459,27 @@ db.unshift({
 }
 
 function render() {
-   
+
+    const currentMonth = new Date().toISOString().slice(0,7);
+    const monthlyEntries = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
+
+    const remaining = ENTRY_LIMIT - monthlyEntries.length;
+
     if(!USER_VERIFIED){
+        const msgBox = document.getElementById("freeLimitMsg");
 
-document.querySelector(".entry-form").insertAdjacentHTML(
-"afterbegin",
-"<div style='color:red;font-size:12px;margin-bottom:10px'>Free account: only 10 entries/month</div>"
-);
+        if(remaining > 0){
+            msgBox.innerHTML = `Free account: ${remaining} entries left this month`;
+            msgBox.style.color = "orange";
+        }else{
+            msgBox.innerHTML = "Free limit reached (10 entries/month)";
+            msgBox.style.color = "red";
+        }
+    }else{
+        document.getElementById("freeLimitMsg").innerHTML = "";
+    }
+   
 
-}
     
     const body = document.getElementById('ledgerBody');
     const sN = document.getElementById('sName').value.toLowerCase();
@@ -475,7 +488,6 @@ document.querySelector(".entry-form").insertAdjacentHTML(
     const sTo = document.getElementById('sTo').value;
 
     body.innerHTML = '';
-    const currentMonth = new Date().toISOString().slice(0,7);
 
     let displayData = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
     let tInc = 0, tExp = 0, tLent = 0, tRec = 0;
