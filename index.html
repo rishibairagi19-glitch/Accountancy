@@ -222,7 +222,7 @@
     
 let currentUser = null, db = [];
 let USER_VERIFIED = false;
-let ENTRY_LIMIT = 10;
+let ENTRY_LIMIT = 30;
 
 let sortField = "";
 let sortAsc = true;
@@ -411,7 +411,7 @@ const monthlyEntries = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
 
 if(!USER_VERIFIED && monthlyEntries.length >= ENTRY_LIMIT){
 
-    alert("Free account limit reached (10 entries/month). Verify account.");
+    alert("Free account limit reached (30 entries/month). Verify account by colling 6263494837 Rishi.");
 
     return;
 
@@ -472,7 +472,7 @@ function render() {
             msgBox.innerHTML = `Free account: ${remaining} entries left this month`;
             msgBox.style.color = "orange";
         }else{
-            msgBox.innerHTML = "Free limit reached (10 entries/month)";
+            msgBox.innerHTML = "Free limit reached (30 entries/month)";
             msgBox.style.color = "red";
         }
     }else{
@@ -707,4 +707,5 @@ a.click();
 </script>
 </body>
 </html>
+
 
