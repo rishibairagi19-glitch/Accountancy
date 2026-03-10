@@ -477,13 +477,15 @@ document.querySelector(".entry-form").insertAdjacentHTML(
     body.innerHTML = '';
     const currentMonth = new Date().toISOString().slice(0,7);
 
-let displayData = db.filter(i => i.m === currentMonth);
+    let displayData = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
     let tInc = 0, tExp = 0, tLent = 0, tRec = 0;
     filteredData = [];
 
     displayData.forEach(i => {
 
-        if(i.m !== currentMonth) return; // dashboard me sirf current month
+        const itemMonth = i.m || i.d.slice(0,7);
+
+        if(itemMonth !== currentMonth) return; // dashboard me sirf current month
         if(i.t==='inc') tInc+=i.a;
         if(i.t==='exp') tExp+=i.a;
         if(i.t==='lent') tLent+=i.a;
