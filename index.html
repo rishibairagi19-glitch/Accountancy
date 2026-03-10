@@ -106,6 +106,7 @@
         <span style="color: var(--p); font-weight: 900; font-family: 'Outfit';">RICK'S VAULT</span>
         <div style="font-size:12px; opacity:0.8;">
             Logged in: <span id="userEmail"></span>
+            <span id="verifyBadge" style="margin-left:10px;font-size:11px;"></span>
         </div>
     </div>
 
@@ -219,6 +220,9 @@
 <script>
     
 let currentUser = null, db = [];
+let USER_VERIFIED = false;
+let ENTRY_LIMIT = 10;
+
 let sortField = "";
 let sortAsc = true;
 //const API_URL = "http://rick-pc:5000/api";
@@ -321,6 +325,14 @@ async function handleLogin() {
         currentUser = data.email;
         db = data.ledger_data;
 
+        USER_VERIFIED = data.verified || false;
+
+        if(USER_VERIFIED){
+            document.getElementById("verifyBadge").innerHTML = "✅ VERIFIED";
+        }else{
+            document.getElementById("verifyBadge").innerHTML = "⚠ FREE USER";
+        }
+
         document.getElementById("userEmail").innerText = currentUser;
 
         localStorage.setItem("rickUser", currentUser);
@@ -369,6 +381,8 @@ async function handleSignup(){
         currentUser = data.email;
         db = data.ledger_data || [];
 
+        USER_VERIFIED = false;
+
         localStorage.setItem("rickUser", currentUser);
         localStorage.setItem("rickData", JSON.stringify(db));
         localStorage.setItem("rickLoginTime", Date.now().toString());
@@ -390,6 +404,17 @@ function logout() {
 }
 
 async function add() {
+    const currentMonth = new Date().toISOString().slice(0,7);
+
+const monthlyEntries = db.filter(i => i.m === currentMonth);
+
+if(!USER_VERIFIED && monthlyEntries.length >= ENTRY_LIMIT){
+
+    alert("Free account limit reached (10 entries/month). Verify account.");
+
+    return;
+
+}
     const n = document.getElementById('pName').value.trim();
     const a = parseFloat(document.getElementById('pAmt').value);
     const d = document.getElementById('pDate').value;
@@ -434,6 +459,14 @@ db.unshift({
 
 function render() {
    
+    if(!USER_VERIFIED){
+
+document.querySelector(".entry-form").insertAdjacentHTML(
+"afterbegin",
+"<div style='color:red;font-size:12px;margin-bottom:10px'>Free account: only 10 entries/month</div>"
+);
+
+}
     
     const body = document.getElementById('ledgerBody');
     const sN = document.getElementById('sName').value.toLowerCase();
