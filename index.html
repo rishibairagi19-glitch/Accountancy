@@ -411,10 +411,13 @@ async function add() {
     }
 
     // ✅ Add new entry at TOP
-    db.unshift({ 
-        id: Date.now().toString().slice(-6), 
-        n, a, d, t 
-    });
+    const month = d.slice(0,7); // 2026-03 format
+
+db.unshift({ 
+    id: Date.now().toString().slice(-6), 
+    n, a, d, t,
+    m: month
+});
 
     render();
 
@@ -430,6 +433,8 @@ async function add() {
 }
 
 function render() {
+   
+    
     const body = document.getElementById('ledgerBody');
     const sN = document.getElementById('sName').value.toLowerCase();
     const sT = document.getElementById('sType').value;
@@ -437,10 +442,15 @@ function render() {
     const sTo = document.getElementById('sTo').value;
 
     body.innerHTML = '';
+    const currentMonth = new Date().toISOString().slice(0,7);
+
+let displayData = db.filter(i => i.m === currentMonth);
     let tInc = 0, tExp = 0, tLent = 0, tRec = 0;
     filteredData = [];
 
-    db.forEach(i => {
+    displayData.forEach(i => {
+
+        if(i.m !== currentMonth) return; // dashboard me sirf current month
         if(i.t==='inc') tInc+=i.a;
         if(i.t==='exp') tExp+=i.a;
         if(i.t==='lent') tLent+=i.a;
@@ -650,4 +660,3 @@ a.click();
 </script>
 </body>
 </html>
-
