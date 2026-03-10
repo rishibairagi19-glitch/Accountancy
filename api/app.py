@@ -28,6 +28,7 @@ def create_default_user():
             supabase.table("users").insert({
                 "email": DEFAULT_EMAIL,
                 "password": DEFAULT_PASSWORD,
+                "verified": True,
                 "ledger_data": []
             }).execute()
             print("--- Default user created successfully ---")
@@ -62,6 +63,7 @@ def register():
         supabase.table("users").insert({
             "email": email,
             "password": password,
+            "verified": False,
             "ledger_data": []
         }).execute()
 
@@ -99,10 +101,33 @@ def login():
         if res.data and len(res.data) > 0:
             return jsonify({
                 "email": res.data[0]["email"],
+                "verified": res.data[0]["verified"],
                 "ledger_data": res.data[0]["ledger_data"]
             })
 
         return jsonify({"error": "Invalid credentials"}), 401
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    {
+ "email":"user@gmail.com"
+}
+
+@app.route("/api/check_verified", methods=["POST"])
+def check_verified():
+    try:
+        data = request.json
+        email = data.get("email")
+
+        res = supabase.table("users") \
+            .select("verified") \
+            .eq("email", email) \
+            .execute()
+
+        return jsonify({
+            "verified": res.data[0]["verified"]
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
