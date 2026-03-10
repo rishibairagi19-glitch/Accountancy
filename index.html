@@ -490,10 +490,10 @@ function render() {
         const msgBox = document.getElementById("freeLimitMsg");
 
         if(remaining > 0){
-            msgBox.innerHTML = `Free account: ${remaining} entries left `;
+            msgBox.innerHTML = `Free account: ${remaining} entries left this month`;
             msgBox.style.color = "orange";
         }else{
-            msgBox.innerHTML = "Free limit reached (30 entries)";
+            msgBox.innerHTML = "Free limit reached (30 entries/month)";
             msgBox.style.color = "red";
         }
     }else{
@@ -510,7 +510,15 @@ function render() {
 
     body.innerHTML = '';
 
-    let displayData = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
+    let displayData;
+
+    if(sN || sT || sF || sTo){
+        // search active → all months
+        displayData = db;
+    }else{
+        // normal dashboard → selected month
+        displayData = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
+    }
     let tInc = 0, tExp = 0, tLent = 0, tRec = 0;
     filteredData = [];
 
@@ -518,7 +526,7 @@ function render() {
 
         const itemMonth = i.m || i.d.slice(0,7);
 
-        if(itemMonth !== currentMonth) return; // dashboard me sirf current month
+       
         if(i.t==='inc') tInc+=i.a;
         if(i.t==='exp') tExp+=i.a;
         if(i.t==='lent') tLent+=i.a;
