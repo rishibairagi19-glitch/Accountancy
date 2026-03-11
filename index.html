@@ -8,6 +8,48 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+
+        .notes-panel{
+        background:var(--card);
+        padding:15px;
+        border-radius:15px;
+        border:1px solid rgba(255,255,255,0.1);
+        margin-bottom:20px;
+        }
+
+        .notes-header{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        font-weight:bold;
+        margin-bottom:10px;
+        }
+
+        .notes-header button{
+        background:var(--p);
+        border:none;
+        color:white;
+        padding:5px 10px;
+        border-radius:8px;
+        cursor:pointer;
+        }
+
+        .note-item{
+        background:rgba(0,0,0,0.2);
+        padding:8px;
+        border-radius:8px;
+        margin-bottom:6px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        font-size:13px;
+        }
+
+        .note-actions span{
+        cursor:pointer;
+        margin-left:8px;
+        }
+
         :root { 
             --primary: #22C55E; --bg-login: linear-gradient(180deg, #E2F2E9 0%, #FFFFFF 100%);
             --p: #6366f1; --s: #10b981; --d: #f43f5e; --blue: #3b82f6; --income: #fbbf24; 
@@ -155,6 +197,18 @@
             <div class="stat-box"><small>Real Savings</small><b id="realSav" style="color:var(--s)">₹0</b></div>
         </div>
 
+        <!-- NOTES PANEL -->
+        <div class="notes-panel">
+
+        <div class="notes-header">
+        <span>📝 Quick Notes</span>
+        <button onclick="addNote()">➕</button>
+        </div>
+
+        <div id="notesList"></div>
+
+        </div>
+
         <div class="entry-form">
             <div id="freeLimitMsg" style="font-size:12px;margin-bottom:10px;"></div>
             <input type="text" id="pName" class="dash-input" placeholder="Source/Name">
@@ -230,6 +284,8 @@
 </div>
 
 <script>
+
+    
     
 let currentUser = null, db = [];
 let USER_VERIFIED = false;
@@ -243,6 +299,72 @@ let sortAsc = true;
 const API_URL = "/api";
 const SESSION_TIME = 30 * 60 * 1000;
 let BUDGET_LIMIT = 30000;
+
+let notes = JSON.parse(localStorage.getItem("rickNotes") || "[]");
+
+function renderNotes(){
+
+const box = document.getElementById("notesList");
+
+box.innerHTML="";
+
+notes.forEach((n,i)=>{
+
+box.innerHTML += `
+<div class="note-item">
+<span>${n}</span>
+
+<div class="note-actions">
+<span onclick="editNote(${i})">✏</span>
+<span onclick="deleteNote(${i})">🗑</span>
+</div>
+
+</div>
+`;
+
+});
+
+}
+
+function addNote(){
+
+const text = prompt("Write Note");
+
+if(!text) return;
+
+notes.push(text);
+
+localStorage.setItem("rickNotes",JSON.stringify(notes));
+
+renderNotes();
+
+}
+
+function editNote(i){
+
+const text = prompt("Edit Note",notes[i]);
+
+if(!text) return;
+
+notes[i]=text;
+
+localStorage.setItem("rickNotes",JSON.stringify(notes));
+
+renderNotes();
+
+}
+
+function deleteNote(i){
+
+if(!confirm("Delete note?")) return;
+
+notes.splice(i,1);
+
+localStorage.setItem("rickNotes",JSON.stringify(notes));
+
+renderNotes();
+
+}
 
 function changeMonth(){
 
@@ -331,6 +453,7 @@ window.onload = function() {
             BUDGET_LIMIT = parseFloat(savedLimit);
         }
         document.getElementById("budgetInput").value = BUDGET_LIMIT;
+        renderNotes();
 
 };
 
