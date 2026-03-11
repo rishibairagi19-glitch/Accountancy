@@ -8,65 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-
-        /* Animated Auth UI */
-
-            .auth-container{
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            min-height:100vh;
-            background:var(--bg-login);
-            }
-
-            .auth-box{
-            background:white;
-            width:850px;
-            max-width:95%;
-            height:500px;
-            border-radius:20px;
-            box-shadow:0 15px 40px rgba(0,0,0,0.2);
-            display:flex;
-            overflow:hidden;
-            position:relative;
-            }
-
-            .auth-form{
-            width:50%;
-            padding:40px;
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            }
-
-            .auth-form h1{
-            margin-bottom:20px;
-            text-align:center;
-            }
-
-            .auth-overlay{
-            width:50%;
-            background:linear-gradient(135deg,#22C55E,#16a34a);
-            color:white;
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            align-items:center;
-            text-align:center;
-            padding:40px;
-            }
-
-            .switch-btn{
-            background:white;
-            color:#16a34a;
-            border:none;
-            padding:10px 25px;
-            border-radius:20px;
-            cursor:pointer;
-            font-weight:bold;
-            margin-top:15px;
-            }
-
         :root { 
             --primary: #22C55E; --bg-login: linear-gradient(180deg, #E2F2E9 0%, #FFFFFF 100%);
             --p: #6366f1; --s: #10b981; --d: #f43f5e; --blue: #3b82f6; --income: #fbbf24; 
@@ -115,147 +56,202 @@
         .auth-container { background: var(--bg-login); display: flex; justify-content: center; min-height: 100vh; color: #111827; }
         .iphone-ui { width: 100%; max-width: 430px; padding: 40px 24px; }
         .btn-main { width: 100%; background: var(--primary); color: white; padding: 18px; border-radius: 15px; font-size: 16px; }
-    
-    /* SLIDING LOGIN UI */
-
-        .auth-container{
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        min-height:100vh;
-        background:var(--bg-login);
-        overflow:hidden;
-        }
-
-        .auth-wrapper{
-        width:100%;
-        max-width:900px;
-        height:520px;
-        overflow:hidden;
-        }
-
-        .auth-container-slide{
-        display:flex;
-        width:200%;
-        height:100%;
-        transition:transform 0.6s ease;
-        }
-
-        /* PANEL */
-
-        .auth-panel{
-        width:50%;
-        background:white;
-        padding:40px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:center;
-        }
-
-        .auth-panel h1{
-        margin-bottom:20px;
-        }
-
-        .switch-text{
-        margin-top:15px;
-        font-size:14px;
-        }
-
-        .switch-text span{
-        color:var(--primary);
-        cursor:pointer;
-        font-weight:bold;
-        }
-
-        /* DESKTOP */
-
-        @media(min-width:769px){
-
-        .auth-container-slide.signup-active{
-        transform:translateX(-50%);
-        }
-
-        }
-
-        /* MOBILE */
-
-        @media(max-width:768px){
-
-        .auth-wrapper{
-        height:auto;
-        }
-
-        .auth-container-slide{
-        flex-direction:column;
-        width:100%;
-        }
-
-        .auth-panel{
-        width:100%;
-        min-height:100vh;
-        }
-
-        .auth-container-slide.signup-active{
-        transform:translateY(-100%);
-        }
-
-        }
-
     </style>
 </head>
 <body>
 
 <div id="auth-view" class="auth-container">
 
-<div class="auth-wrapper">
+<style>
 
-<div class="auth-container-slide" id="authSlider">
+.auth-container{
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+background:#f6f5f7;
+}
 
-<!-- LOGIN PANEL -->
-<div class="auth-panel login-panel">
+.container{
+background:#fff;
+border-radius:10px;
+box-shadow:0 14px 28px rgba(0,0,0,0.25);
+position:relative;
+overflow:hidden;
+width:800px;
+max-width:100%;
+min-height:480px;
+}
 
-<h1>Vault Login</h1>
+.form-container{
+position:absolute;
+top:0;
+height:100%;
+transition:all 0.6s ease-in-out;
+}
 
-<input type="email" id="lEmail" class="dash-input" placeholder="Email">
+.sign-in-container{
+left:0;
+width:50%;
+z-index:2;
+}
 
-<input type="password" id="lPass" class="dash-input"
-placeholder="Password"
-onkeydown="if(event.key==='Enter'){handleLogin()}">
+.container.right-panel-active .sign-in-container{
+transform:translateX(100%);
+}
 
-<button class="btn-main" onclick="handleLogin()">Login</button>
+.sign-up-container{
+left:0;
+width:50%;
+opacity:0;
+z-index:1;
+}
 
-<p class="switch-text">
-New User ?
-<span onclick="showSignup()">Create Account</span>
-</p>
+.container.right-panel-active .sign-up-container{
+transform:translateX(100%);
+opacity:1;
+z-index:5;
+}
+
+form{
+background:#fff;
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+padding:0 50px;
+height:100%;
+text-align:center;
+}
+
+input{
+background:#eee;
+border:none;
+padding:12px;
+margin:8px 0;
+width:100%;
+}
+
+button{
+border-radius:20px;
+border:1px solid #ff4b2b;
+background:#ff4b2b;
+color:#fff;
+font-size:12px;
+padding:12px 45px;
+cursor:pointer;
+}
+
+.overlay-container{
+position:absolute;
+top:0;
+left:50%;
+width:50%;
+height:100%;
+overflow:hidden;
+transition:transform 0.6s ease-in-out;
+}
+
+.container.right-panel-active .overlay-container{
+transform:translateX(-100%);
+}
+
+.overlay{
+background:linear-gradient(to right,#ff4b2b,#ff416c);
+color:#fff;
+position:relative;
+left:-100%;
+height:100%;
+width:200%;
+transition:transform 0.6s ease-in-out;
+}
+
+.container.right-panel-active .overlay{
+transform:translateX(50%);
+}
+
+.overlay-panel{
+position:absolute;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+top:0;
+height:100%;
+width:50%;
+padding:0 40px;
+}
+
+.overlay-right{
+right:0;
+}
+
+</style>
+
+<div class="container" id="container">
+
+<div class="form-container sign-up-container">
+<form onsubmit="handleSignup(); return false;">
+<h2>Create Account</h2>
+
+<input type="email" id="sEmail" placeholder="Email">
+<input type="password" id="sPass" placeholder="Password">
+
+<button type="submit">Sign Up</button>
+
+</form>
+</div>
+
+<div class="form-container sign-in-container">
+<form onsubmit="handleLogin(); return false;">
+
+<h2>Sign in</h2>
+
+<input type="email" id="lEmail" placeholder="Email">
+<input type="password" id="lPass" placeholder="Password">
+
+<button type="submit">Sign In</button>
+
+</form>
+</div>
+
+<div class="overlay-container">
+<div class="overlay">
+
+<div class="overlay-panel overlay-left">
+<h2>Welcome Back!</h2>
+<button id="signIn">Sign In</button>
+</div>
+
+<div class="overlay-panel overlay-right">
+<h2>Hello Friend!</h2>
+<button id="signUp">Sign Up</button>
+</div>
+
+</div>
+</div>
 
 </div>
 
+<script>
 
-<!-- SIGNUP PANEL -->
-<div class="auth-panel signup-panel">
+const signUpBtn = document.getElementById("signUp");
+const signInBtn = document.getElementById("signIn");
+const container = document.getElementById("container");
 
-<h1>Create Account</h1>
+signUpBtn.addEventListener("click", () => {
+container.classList.add("right-panel-active");
+});
 
-<input type="email" id="sEmail" class="dash-input" placeholder="Email">
+signInBtn.addEventListener("click", () => {
+container.classList.remove("right-panel-active");
+});
 
-<input type="password" id="sPass" class="dash-input" placeholder="Password">
-
-<button class="btn-main" onclick="handleSignup()">Sign Up</button>
-
-<p class="switch-text">
-Already have account ?
-<span onclick="showLogin()">Login</span>
-</p>
-
-</div>
+</script>
 
 </div>
 
-</div>
-
-</div>
 <div id="dashboard-view">
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
@@ -527,16 +523,15 @@ async function handleLogin() {
 }
 
 function showSignup(){
-
-document.getElementById("authSlider").classList.add("signup-active");
-
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('signup-view').style.display = 'block';
 }
 
 function showLogin(){
-
-document.getElementById("authSlider").classList.remove("signup-active");
-
+    document.getElementById('signup-view').style.display = 'none';
+    document.getElementById('login-view').style.display = 'block';
 }
+
 async function handleSignup(){
     const email = document.getElementById('sEmail').value;
     const pass = btoa(document.getElementById('sPass').value);
