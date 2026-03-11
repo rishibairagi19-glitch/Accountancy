@@ -115,57 +115,141 @@
         .auth-container { background: var(--bg-login); display: flex; justify-content: center; min-height: 100vh; color: #111827; }
         .iphone-ui { width: 100%; max-width: 430px; padding: 40px 24px; }
         .btn-main { width: 100%; background: var(--primary); color: white; padding: 18px; border-radius: 15px; font-size: 16px; }
+    
+    /* SLIDING LOGIN UI */
+
+        .auth-container{
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        min-height:100vh;
+        background:var(--bg-login);
+        overflow:hidden;
+        }
+
+        .auth-wrapper{
+        width:100%;
+        max-width:900px;
+        height:520px;
+        overflow:hidden;
+        }
+
+        .auth-container-slide{
+        display:flex;
+        width:200%;
+        height:100%;
+        transition:transform 0.6s ease;
+        }
+
+        /* PANEL */
+
+        .auth-panel{
+        width:50%;
+        background:white;
+        padding:40px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        }
+
+        .auth-panel h1{
+        margin-bottom:20px;
+        }
+
+        .switch-text{
+        margin-top:15px;
+        font-size:14px;
+        }
+
+        .switch-text span{
+        color:var(--primary);
+        cursor:pointer;
+        font-weight:bold;
+        }
+
+        /* DESKTOP */
+
+        @media(min-width:769px){
+
+        .auth-container-slide.signup-active{
+        transform:translateX(-50%);
+        }
+
+        }
+
+        /* MOBILE */
+
+        @media(max-width:768px){
+
+        .auth-wrapper{
+        height:auto;
+        }
+
+        .auth-container-slide{
+        flex-direction:column;
+        width:100%;
+        }
+
+        .auth-panel{
+        width:100%;
+        min-height:100vh;
+        }
+
+        .auth-container-slide.signup-active{
+        transform:translateY(-100%);
+        }
+
+        }
+
     </style>
 </head>
 <body>
 
 <div id="auth-view" class="auth-container">
 
-<div class="auth-box">
+<div class="auth-wrapper">
 
-<div id="login-view" class="auth-form">
+<div class="auth-container-slide" id="authSlider">
+
+<!-- LOGIN PANEL -->
+<div class="auth-panel login-panel">
 
 <h1>Vault Login</h1>
 
-<input type="email" id="lEmail" class="dash-input" style="background:white;color:black" placeholder="Email">
+<input type="email" id="lEmail" class="dash-input" placeholder="Email">
 
-<input type="password" id="lPass" class="dash-input" style="background:white;color:black"
+<input type="password" id="lPass" class="dash-input"
 placeholder="Password"
 onkeydown="if(event.key==='Enter'){handleLogin()}">
 
-<button class="btn-main" style="margin-top:20px" onclick="handleLogin()">
-Login
-</button>
+<button class="btn-main" onclick="handleLogin()">Login</button>
+
+<p class="switch-text">
+New User ?
+<span onclick="showSignup()">Create Account</span>
+</p>
 
 </div>
 
 
-<div id="signup-view" class="auth-form" style="display:none">
+<!-- SIGNUP PANEL -->
+<div class="auth-panel signup-panel">
 
 <h1>Create Account</h1>
 
-<input type="email" id="sEmail" class="dash-input" style="background:white;color:black" placeholder="Email">
+<input type="email" id="sEmail" class="dash-input" placeholder="Email">
 
-<input type="password" id="sPass" class="dash-input" style="background:white;color:black" placeholder="Password">
+<input type="password" id="sPass" class="dash-input" placeholder="Password">
 
-<button class="btn-main" style="margin-top:20px" onclick="handleSignup()">
-Sign Up
-</button>
+<button class="btn-main" onclick="handleSignup()">Sign Up</button>
 
-</div>
-
-
-<div class="auth-overlay">
-
-<h2 id="authTitle">Hello Friend 👋</h2>
-
-<p id="authText">
-Enter your details and start your ledger journey
+<p class="switch-text">
+Already have account ?
+<span onclick="showLogin()">Login</span>
 </p>
 
-<button class="switch-btn" onclick="showSignup()">Sign Up</button>
-
-<button class="switch-btn" onclick="showLogin()">Login</button>
+</div>
 
 </div>
 
@@ -444,21 +528,13 @@ async function handleLogin() {
 
 function showSignup(){
 
-document.getElementById('login-view').style.display = 'none';
-document.getElementById('signup-view').style.display = 'flex';
-
-document.getElementById("authTitle").innerText="Welcome Back!";
-document.getElementById("authText").innerText="Already have an account? Login here";
+document.getElementById("authSlider").classList.add("signup-active");
 
 }
 
 function showLogin(){
 
-document.getElementById('signup-view').style.display = 'none';
-document.getElementById('login-view').style.display = 'flex';
-
-document.getElementById("authTitle").innerText="Hello Friend 👋";
-document.getElementById("authText").innerText="Enter your details and start your ledger journey";
+document.getElementById("authSlider").classList.remove("signup-active");
 
 }
 async function handleSignup(){
