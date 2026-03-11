@@ -462,6 +462,7 @@ function toggleTheme() {
 }
 
 window.onload = function() {
+    document.getElementById("userEmail").innerText = currentUser;
     document.getElementById("monthSelector").value = selectedMonth;
     if(localStorage.getItem("rickTheme") === 'light') document.body.classList.add('light-mode');
     
@@ -490,7 +491,6 @@ window.onload = function() {
 
 
 async function handleLogin(){
-    console.log("login clicked");
 
 const email = document.getElementById("lEmail").value.trim();
 const password = document.getElementById("lPass").value.trim();
@@ -512,10 +512,19 @@ const data = await res.json();
 
 if(data.success){
 
-currentUser = email;
+currentUser = data.email;
+db = data.ledger_data || [];
+
+localStorage.setItem("rickUser", currentUser);
+localStorage.setItem("rickData", JSON.stringify(db));
+localStorage.setItem("rickLoginTime", Date.now());
+
+document.getElementById("userEmail").innerText = currentUser;
 
 document.getElementById("auth-view").style.display="none";
 document.getElementById("dashboard-view").style.display="block";
+
+document.getElementById('pDate').valueAsDate = new Date();
 
 render();
 
@@ -532,7 +541,6 @@ alert("Server Error");
 }
 
 }
-
 async function handleSignup(){
 
 const email = document.getElementById("sEmail").value.trim();
