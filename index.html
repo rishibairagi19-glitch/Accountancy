@@ -9,6 +9,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
 
+        .top-grid{
+        display:grid;
+        grid-template-columns: 2fr 1fr;
+        gap:10px;
+        margin-bottom:20px;
+        }
+
+        .stats-grid{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:10px;
+        }
+
+        .notes-panel{
+        background:var(--card);
+        padding:12px;
+        border-radius:15px;
+        border:1px solid rgba(255,255,255,0.1);
+        max-height:170px;
+        overflow-y:auto;
+        }
+
         .notes-panel{
         background:var(--card);
         padding:15px;
@@ -188,6 +210,8 @@
                 style="padding:5px;border-radius:8px;border:1px solid #ccc;">
         </div>
 
+        <div class="top-grid">
+
         <div class="stats-grid">
             <div class="stat-box"><small>Balance</small><b id="netBal" style="color:var(--p)">₹0</b></div>
             <div class="stat-box"><small>Income</small><b id="totalInc" style="color:var(--s)">₹0</b></div>
@@ -197,7 +221,6 @@
             <div class="stat-box"><small>Real Savings</small><b id="realSav" style="color:var(--s)">₹0</b></div>
         </div>
 
-        <!-- NOTES PANEL -->
         <div class="notes-panel">
 
         <div class="notes-header">
@@ -209,6 +232,7 @@
 
         </div>
 
+        </div>
         <div class="entry-form">
             <div id="freeLimitMsg" style="font-size:12px;margin-bottom:10px;"></div>
             <input type="text" id="pName" class="dash-input" placeholder="Source/Name">
