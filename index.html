@@ -8,6 +8,65 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+
+        /* Animated Auth UI */
+
+            .auth-container{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            min-height:100vh;
+            background:var(--bg-login);
+            }
+
+            .auth-box{
+            background:white;
+            width:850px;
+            max-width:95%;
+            height:500px;
+            border-radius:20px;
+            box-shadow:0 15px 40px rgba(0,0,0,0.2);
+            display:flex;
+            overflow:hidden;
+            position:relative;
+            }
+
+            .auth-form{
+            width:50%;
+            padding:40px;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            }
+
+            .auth-form h1{
+            margin-bottom:20px;
+            text-align:center;
+            }
+
+            .auth-overlay{
+            width:50%;
+            background:linear-gradient(135deg,#22C55E,#16a34a);
+            color:white;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            text-align:center;
+            padding:40px;
+            }
+
+            .switch-btn{
+            background:white;
+            color:#16a34a;
+            border:none;
+            padding:10px 25px;
+            border-radius:20px;
+            cursor:pointer;
+            font-weight:bold;
+            margin-top:15px;
+            }
+
         :root { 
             --primary: #22C55E; --bg-login: linear-gradient(180deg, #E2F2E9 0%, #FFFFFF 100%);
             --p: #6366f1; --s: #10b981; --d: #f43f5e; --blue: #3b82f6; --income: #fbbf24; 
@@ -61,43 +120,57 @@
 <body>
 
 <div id="auth-view" class="auth-container">
-    <div class="iphone-ui">
 
-        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px;">
-            <div style="width: 35px; height: 35px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">A</div>
-            <div style="font-size:24px; font-weight:700;">Accountancy</div>
-        </div>
+<div class="auth-box">
 
-        <!-- LOGIN VIEW -->
-        <div id="login-view">
-            <h1 style="text-align:center;">Vault Login</h1>
-            <input type="email" id="lEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
-            <input type="password" id="lPass" class="dash-input" style="background:white; color:#000" placeholder="Password" onkeydown="if(event.key==='Enter'){handleLogin()}">
-            
-            <button class="btn-main" style="margin-top:20px" onclick="handleLogin()">Login</button>
+<div id="login-view" class="auth-form">
 
-            <p style="text-align:center; margin-top:15px;">
-                New User? 
-                <span onclick="showSignup()" style="color:var(--primary); font-weight:bold; cursor:pointer;">Create Account</span>
-            </p>
-        </div>
+<h1>Vault Login</h1>
 
-        <!-- SIGNUP VIEW -->
-        <div id="signup-view" style="display:none;">
-            <h1 style="text-align:center;">Create Account</h1>
+<input type="email" id="lEmail" class="dash-input" style="background:white;color:black" placeholder="Email">
 
-            <input type="email" id="sEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
-            <input type="password" id="sPass" class="dash-input" style="background:white; color:#000" placeholder="Password">
+<input type="password" id="lPass" class="dash-input" style="background:white;color:black"
+placeholder="Password"
+onkeydown="if(event.key==='Enter'){handleLogin()}">
 
-            <button class="btn-main" style="margin-top:20px" onclick="handleSignup()">Sign Up</button>
+<button class="btn-main" style="margin-top:20px" onclick="handleLogin()">
+Login
+</button>
 
-            <p style="text-align:center; margin-top:15px;">
-                Already have account? 
-                <span onclick="showLogin()" style="color:var(--primary); font-weight:bold; cursor:pointer;">Login</span>
-            </p>
-        </div>
+</div>
 
-    </div>
+
+<div id="signup-view" class="auth-form" style="display:none">
+
+<h1>Create Account</h1>
+
+<input type="email" id="sEmail" class="dash-input" style="background:white;color:black" placeholder="Email">
+
+<input type="password" id="sPass" class="dash-input" style="background:white;color:black" placeholder="Password">
+
+<button class="btn-main" style="margin-top:20px" onclick="handleSignup()">
+Sign Up
+</button>
+
+</div>
+
+
+<div class="auth-overlay">
+
+<h2 id="authTitle">Hello Friend 👋</h2>
+
+<p id="authText">
+Enter your details and start your ledger journey
+</p>
+
+<button class="switch-btn" onclick="showSignup()">Sign Up</button>
+
+<button class="switch-btn" onclick="showLogin()">Login</button>
+
+</div>
+
+</div>
+
 </div>
 <div id="dashboard-view">
     <div class="container">
@@ -370,15 +443,24 @@ async function handleLogin() {
 }
 
 function showSignup(){
-    document.getElementById('login-view').style.display = 'none';
-    document.getElementById('signup-view').style.display = 'block';
+
+document.getElementById('login-view').style.display = 'none';
+document.getElementById('signup-view').style.display = 'flex';
+
+document.getElementById("authTitle").innerText="Welcome Back!";
+document.getElementById("authText").innerText="Already have an account? Login here";
+
 }
 
 function showLogin(){
-    document.getElementById('signup-view').style.display = 'none';
-    document.getElementById('login-view').style.display = 'block';
-}
 
+document.getElementById('signup-view').style.display = 'none';
+document.getElementById('login-view').style.display = 'flex';
+
+document.getElementById("authTitle").innerText="Hello Friend 👋";
+document.getElementById("authText").innerText="Enter your details and start your ledger journey";
+
+}
 async function handleSignup(){
     const email = document.getElementById('sEmail').value;
     const pass = btoa(document.getElementById('sPass').value);
@@ -736,4 +818,3 @@ a.click();
 </script>
 </body>
 </html>
-
