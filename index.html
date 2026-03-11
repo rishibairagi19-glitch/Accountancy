@@ -8,33 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        
-        #auth-view .container{
-        width:800px !important;
-        max-width:100%;
-        min-height:480px;
-        margin:auto;
-        }
-        #auth-view{
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        height:100vh;
-        background:#f6f5f7;
-        }
-
-        #auth-view .container{
-        background:#fff;
-        border-radius:10px;
-        box-shadow:0 14px 28px rgba(0,0,0,0.25);
-        position:relative;
-        overflow:hidden;
-        width:800px;
-        max-width:100%;
-        min-height:480px;
-        color:black;
-        }
-
         :root { 
             --primary: #22C55E; --bg-login: linear-gradient(180deg, #E2F2E9 0%, #FFFFFF 100%);
             --p: #6366f1; --s: #10b981; --d: #f43f5e; --blue: #3b82f6; --income: #fbbf24; 
@@ -87,48 +60,44 @@
 </head>
 <body>
 
-<div id="auth-view">
+<div id="auth-view" class="auth-container">
+    <div class="iphone-ui">
 
-<div class="container" id="container">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px;">
+            <div style="width: 35px; height: 35px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">A</div>
+            <div style="font-size:24px; font-weight:700;">Accountancy</div>
+        </div>
 
-<div class="form-container sign-up-container">
-<form onsubmit="event.preventDefault(); handleSignup();">
-<h2>Create Account</h2>
-<input type="email" id="sEmail" placeholder="Email">
-<input type="password" id="sPass" placeholder="Password">
-<button type="submit">Sign Up</button>
-</form>
-</div>
+        <!-- LOGIN VIEW -->
+        <div id="login-view">
+            <h1 style="text-align:center;">Vault Login</h1>
+            <input type="email" id="lEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
+            <input type="password" id="lPass" class="dash-input" style="background:white; color:#000" placeholder="Password" onkeydown="if(event.key==='Enter'){handleLogin()}">
+            
+            <button class="btn-main" style="margin-top:20px" onclick="handleLogin()">Login</button>
 
-<div class="form-container sign-in-container">
-<form onsubmit="event.preventDefault(); handleLogin();">
-<h2>Sign in</h2>
-<input type="email" id="lEmail" placeholder="Email">
-<input type="password" id="lPass" placeholder="Password">
-<button type="submit">Sign In</button>
-</form>
-</div>
+            <p style="text-align:center; margin-top:15px;">
+                New User? 
+                <span onclick="showSignup()" style="color:var(--primary); font-weight:bold; cursor:pointer;">Create Account</span>
+            </p>
+        </div>
 
-<div class="overlay-container">
-<div class="overlay">
+        <!-- SIGNUP VIEW -->
+        <div id="signup-view" style="display:none;">
+            <h1 style="text-align:center;">Create Account</h1>
 
-<div class="overlay-panel overlay-left">
-<h2>Welcome Back!</h2>
-<p>To keep connected login with your info</p>
-<button id="signIn">Sign In</button>
-</div>
+            <input type="email" id="sEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
+            <input type="password" id="sPass" class="dash-input" style="background:white; color:#000" placeholder="Password">
 
-<div class="overlay-panel overlay-right">
-<h2>Hello Friend!</h2>
-<p>Enter your details and start journey</p>
-<button id="signUp">Sign Up</button>
-</div>
+            <button class="btn-main" style="margin-top:20px" onclick="handleSignup()">Sign Up</button>
 
-</div>
-</div>
+            <p style="text-align:center; margin-top:15px;">
+                Already have account? 
+                <span onclick="showLogin()" style="color:var(--primary); font-weight:bold; cursor:pointer;">Login</span>
+            </p>
+        </div>
 
-</div>
-
+    </div>
 </div>
 <div id="dashboard-view">
     <div class="container">
@@ -261,18 +230,6 @@
 </div>
 
 <script>
-
-    const signUpBtn = document.getElementById("signUp");
-const signInBtn = document.getElementById("signIn");
-const container = document.getElementById("container");
-
-signUpBtn.addEventListener("click", () => {
-container.classList.add("right-panel-active");
-});
-
-signInBtn.addEventListener("click", () => {
-container.classList.remove("right-panel-active");
-});
     
 let currentUser = null, db = [];
 let USER_VERIFIED = false;
@@ -779,4 +736,3 @@ a.click();
 </script>
 </body>
 </html>
-
