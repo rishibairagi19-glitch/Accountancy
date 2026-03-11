@@ -487,88 +487,87 @@ window.onload = function() {
 
 };
 
-async function handleLogin() {
-    const email = document.getElementById('lEmail').value;
-    const pass = btoa(document.getElementById('lPass').value);
-    const res = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ email, password: pass })
-    });
-    const data = await res.json();
-    if(res.ok) {
-        currentUser = data.email;
-        db = data.ledger_data;
 
-        USER_VERIFIED = data.verified || false;
 
-        if(USER_VERIFIED){
-            document.getElementById("verifyBadge").innerHTML = "✅ VERIFIED";
-        }else{
-            document.getElementById("verifyBadge").innerHTML = "⚠ FREE USER";
-        }
+async function handleLogin(){
 
-        document.getElementById("userEmail").innerText = currentUser;
+const email = document.getElementById("lEmail").value.trim();
+const password = document.getElementById("lPass").value.trim();
 
-        localStorage.setItem("rickUser", currentUser);
-        localStorage.setItem("rickData", JSON.stringify(db));
-        localStorage.setItem("rickLoginTime", Date.now().toString());
-        document.getElementById('auth-view').style.display = 'none';
-        document.getElementById('dashboard-view').style.display = 'block';
-        document.getElementById('pDate').valueAsDate = new Date();
-        render();
-    } else {
-        alert(data.message || "Log-in Failed");
-    }
+if(!email || !password){
+alert("Email aur Password bharo");
+return;
 }
 
-function showSignup(){
-    document.getElementById('login-view').style.display = 'none';
-    document.getElementById('signup-view').style.display = 'block';
+try{
+
+const res = await fetch("/api/login",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ email,password })
+});
+
+const data = await res.json();
+
+if(data.success){
+
+currentUser = email;
+
+document.getElementById("auth-view").style.display="none";
+document.getElementById("dashboard-view").style.display="block";
+
+render();
+
+}else{
+
+alert(data.error || "Login Failed");
+
 }
 
-function showLogin(){
-    document.getElementById('signup-view').style.display = 'none';
-    document.getElementById('login-view').style.display = 'block';
+}catch(err){
+
+alert("Server Error");
+
+}
+
 }
 
 async function handleSignup(){
-    const email = document.getElementById('sEmail').value;
-    const pass = btoa(document.getElementById('sPass').value);
 
-    if(!email || !pass){
-        alert("User and Password are Mendatory fields-Rick");
-        return;
-    }
+const email = document.getElementById("sEmail").value.trim();
+const password = document.getElementById("sPass").value.trim();
 
-    const res = await fetch(`${API_URL}/register`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ email, password: pass })
-    });
+if(!email || !password){
+alert("Email aur Password bharo");
+return;
+}
 
-    const data = await res.json();
+try{
 
-    if(res.ok){
-        alert("Account Created Successfully!");
+const res = await fetch("/api/register",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ email,password })
+});
 
-        // Auto Login After Signup
-        currentUser = data.email;
-        db = data.ledger_data || [];
+const data = await res.json();
 
-        USER_VERIFIED = false;
+if(data.success){
 
-        localStorage.setItem("rickUser", currentUser);
-        localStorage.setItem("rickData", JSON.stringify(db));
-        localStorage.setItem("rickLoginTime", Date.now().toString());
+alert("Account created! Login karo.");
 
-        document.getElementById('auth-view').style.display = 'none';
-        document.getElementById('dashboard-view').style.display = 'block';
-        document.getElementById('pDate').valueAsDate = new Date();
-        render();
-    } else {
-        alert(data.message || "Signup Failed");
-    }
+}else{
+
+alert(data.error || "Signup Failed");
+
+}
+
+}catch(err){
+
+alert("Server Error");
+
+}
+
 }
 
 function logout() {
