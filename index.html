@@ -295,11 +295,8 @@
     </div>
 
     <script>
-
         
     let currentUser = null, db = [];
-    let notes = [];
-    let filteredData = [];
     let USER_VERIFIED = false;
     let ENTRY_LIMIT = 30;
     let selectedMonth = new Date().toISOString().slice(0,7);
@@ -311,56 +308,57 @@
     const API_URL = "/api";
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
-    
 
-    window.addEventListener("load", () => {
-    autoLogin();
-});
+    function renderNotes(){
 
-    async function autoLogin(){
+    const box = document.getElementById("notesList");
 
-    let savedUser = localStorage.getItem("rickUser");
+    box.innerHTML="";
 
-    if(!savedUser) return;
+    notes.forEach((n,i)=>{
 
-    try{
+    box.innerHTML += `
+    <div class="note-item">
+    <span>${n}</span>
 
-    let res = await fetch(`${API_URL}/login`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-    email:savedUser,
-    password:localStorage.getItem("rickPass")
-    })
+    <div class="note-actions">
+    <span onclick="editNote(${i})">✏</span>
+    <span onclick="deleteNote(${i})">🗑</span>
+    </div>
+
+    </div>
+    `;
+
     });
 
-    let data = await res.json();
+    }
 
-    if(res.ok){
 
-    currentUser = data.email;
+    function editNote(i){
 
-    db = data.ledger_data || [];
-    notes = data.notes || [];
+    const text = prompt("Edit Note",notes[i]);
 
-    USER_VERIFIED = data.verified || false;
+    if(!text) return;
 
-    document.getElementById("userEmail").innerText = currentUser;
+    notes[i]=text;
 
-    document.getElementById('auth-view').style.display = 'none';
-    document.getElementById('dashboard-view').style.display = 'block';
+    localStorage.setItem("rickNotes",JSON.stringify(notes));
 
-    render();
-    loadNotes();
+    renderNotes();
 
     }
 
-    }catch(e){
-    console.log("Auto login failed");
-    }
+    function deleteNote(i){
+
+    if(!confirm("Delete note?")) return;
+
+    notes.splice(i,1);
+
+    localStorage.setItem("rickNotes",JSON.stringify(notes));
+
+    renderNotes();
 
     }
-
 
     function changeMonth(){
 
@@ -426,7 +424,7 @@
         localStorage.setItem("rickTheme", document.body.classList.contains('light-mode') ? 'light' : 'dark');
     }
 
-    window.addEventListener("load", function() {
+    window.onload = function() {
         document.getElementById("monthSelector").value = selectedMonth;
         if(localStorage.getItem("rickTheme") === 'light') document.body.classList.add('light-mode');
         
@@ -449,6 +447,7 @@
                 BUDGET_LIMIT = parseFloat(savedLimit);
             }
             document.getElementById("budgetInput").value = BUDGET_LIMIT;
+            renderNotes();
 
     };
 
@@ -527,8 +526,6 @@
 
     function renderNotes(){
 
-    if(!notes) notes = [];
-
     const box=document.getElementById("notesList");
 
     box.innerHTML="";
@@ -562,7 +559,6 @@
         if(res.ok) {
             currentUser = data.email;
             db = data.ledger_data;
-            notes = data.notes || [];
 
             USER_VERIFIED = data.verified || false;
 
@@ -575,7 +571,6 @@
             document.getElementById("userEmail").innerText = currentUser;
 
             localStorage.setItem("rickUser", currentUser);
-            localStorage.setItem("rickPass", pass);
             localStorage.setItem("rickData", JSON.stringify(db));
             localStorage.setItem("rickLoginTime", Date.now().toString());
             document.getElementById('auth-view').style.display = 'none';
@@ -627,7 +622,6 @@
             USER_VERIFIED = false;
 
             localStorage.setItem("rickUser", currentUser);
-            localStorage.setItem("rickPass", pass);
             localStorage.setItem("rickData", JSON.stringify(db));
             localStorage.setItem("rickLoginTime", Date.now().toString());
 
