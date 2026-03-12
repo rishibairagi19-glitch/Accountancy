@@ -454,6 +454,77 @@ window.onload = function() {
 
 };
 
+async function loadNotes(){
+
+const res = await fetch(`/api/getUser?email=${currentUser}`);
+
+const data = await res.json();
+
+notes = data.notes || [];
+
+renderNotes();
+
+}
+
+async function addNote(){
+
+const text = prompt("Write Note");
+
+if(!text) return;
+
+notes.push(text);
+
+await fetch("/api/updateNotes",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+notes:notes
+})
+});
+
+renderNotes();
+
+}
+
+async function deleteNote(i){
+
+if(!confirm("Delete note?")) return;
+
+notes.splice(i,1);
+
+await fetch("/api/updateNotes",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+notes:notes
+})
+});
+
+renderNotes();
+
+}
+
+function renderNotes(){
+
+const box=document.getElementById("notesList");
+
+box.innerHTML="";
+
+notes.forEach((n,i)=>{
+
+box.innerHTML+=`
+<div class="note-item">
+<span>${n}</span>
+<span onclick="deleteNote(${i})">🗑</span>
+</div>
+`;
+
+});
+
+}
+
 async function handleLogin() {
     const email = document.getElementById('lEmail').value;
     const pass = btoa(document.getElementById('lPass').value);
