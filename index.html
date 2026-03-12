@@ -335,6 +335,12 @@
 
     }
 
+    ledger = data.ledger_data || [];
+    notes = data.notes || [];
+
+    render();
+    renderNotes();
+
     function addNote(){
 
     const text = prompt("Write Note");
