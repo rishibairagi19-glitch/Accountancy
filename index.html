@@ -309,8 +309,6 @@
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
 
-    let notes = JSON.parse(localStorage.getItem("rickNotes") || "[]");
-
     function renderNotes(){
 
     const box = document.getElementById("notesList");
@@ -335,25 +333,6 @@
 
     }
 
-    ledger = data.ledger_data || [];
-    notes = data.notes || [];
-
-    render();
-    renderNotes();
-
-    function addNote(){
-
-    const text = prompt("Write Note");
-
-    if(!text) return;
-
-    notes.push(text);
-
-    localStorage.setItem("rickNotes",JSON.stringify(notes));
-
-    renderNotes();
-
-    }
 
     function editNote(i){
 
@@ -637,6 +616,8 @@
             // Auto Login After Signup
             currentUser = data.email;
             db = data.ledger_data || [];
+
+            notes = data.notes || []; 
 
             USER_VERIFIED = false;
 
