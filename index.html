@@ -309,6 +309,52 @@
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
 
+    window.addEventListener("load", autoLogin);
+
+    async function autoLogin(){
+
+    let savedUser = localStorage.getItem("rickUser");
+
+    if(!savedUser) return;
+
+    try{
+
+    let res = await fetch(API + "/api/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+    email:savedUser,
+    password:localStorage.getItem("rickPass")
+    })
+    });
+
+    let data = await res.json();
+
+    if(res.ok){
+
+    currentUser = data.email;
+
+    db = data.ledger_data || [];
+    notes = data.notes || [];
+
+    USER_VERIFIED = data.verified || false;
+
+    document.getElementById("userEmail").innerText = currentUser;
+
+    document.getElementById('auth-view').style.display = 'none';
+    document.getElementById('dashboard-view').style.display = 'block';
+
+    render();
+    renderNotes();
+
+    }
+
+    }catch(e){
+    console.log("Auto login failed");
+    }
+
+    }
+
     function renderNotes(){
 
     const box = document.getElementById("notesList");
@@ -571,6 +617,7 @@
             document.getElementById("userEmail").innerText = currentUser;
 
             localStorage.setItem("rickUser", currentUser);
+            localStorage.setItem("rickPass", password);
             localStorage.setItem("rickData", JSON.stringify(db));
             localStorage.setItem("rickLoginTime", Date.now().toString());
             document.getElementById('auth-view').style.display = 'none';
