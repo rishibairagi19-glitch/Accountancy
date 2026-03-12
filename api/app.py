@@ -216,6 +216,17 @@ def home():
         "message": "Rick Accountancy API is running on Supabase"
     })
 
+@app.post("/api/updateNotes")
+def update_notes():
+
+    data = request.json
+
+    supabase.table("users").update({
+        "notes": data["notes"]
+    }).eq("email", data["email"]).execute()
+
+    return {"success":True}
+
 # ---------------- RUN SERVER ----------------
 if __name__ == "__main__":
     # Render/Railway automatically sets PORT
