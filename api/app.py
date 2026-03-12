@@ -29,7 +29,8 @@ def create_default_user():
                 "email": DEFAULT_EMAIL,
                 "password": DEFAULT_PASSWORD,
                 "verified": True,
-                "ledger_data": []
+                "ledger_data": [],
+                "notes": []
             }).execute()
             print("--- Default user created successfully ---")
         else:
@@ -64,7 +65,8 @@ def register():
             "email": email,
             "password": password,
             "verified": False,
-            "ledger_data": []
+            "ledger_data": [],
+            "notes": []
         }).execute()
 
         return jsonify({
@@ -102,7 +104,8 @@ def login():
             return jsonify({
                 "email": res.data[0]["email"],
                 "verified": res.data[0]["verified"],
-                "ledger_data": res.data[0]["ledger_data"]
+                "ledger_data": res.data[0]["ledger_data"],
+                "notes": res.data[0].get("notes", [])
             })
 
         return jsonify({"error": "Invalid credentials"}), 401
@@ -110,9 +113,6 @@ def login():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-    {
- "email":"user@gmail.com"
-}
 
 @app.route("/api/check_verified", methods=["POST"])
 def check_verified():
