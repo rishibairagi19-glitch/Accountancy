@@ -8,56 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-
-      .top-layout{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:10px;
-        margin-bottom:20px;
-        }
-
-        .notes-panel{
-        background:var(--card);
-        padding:15px;
-        border-radius:15px;
-        border:1px solid rgba(255,255,255,0.1);
-        max-height:260px;
-        overflow-y:auto;
-        }
-
-        .top-bar{
-        background:var(--card);
-        padding:10px;
-        border-radius:12px;
-        margin-bottom:10px;
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:10px;
-        align-items:center;
-        }
-
-        .top-grid{
-        display:grid;
-        grid-template-columns: 2fr 1fr;
-        gap:10px;
-        margin-bottom:20px;
-        }
-
-        .stats-grid{
-        display:grid;
-        grid-template-columns:repeat(2,1fr);
-        gap:10px;
-        }
-
-        .notes-panel{
-        background:var(--card);
-        padding:12px;
-        border-radius:15px;
-        border:1px solid rgba(255,255,255,0.1);
-        max-height:170px;
-        overflow-y:auto;
-        }
-
         .notes-panel{
         background:var(--card);
         padding:15px;
@@ -226,7 +176,8 @@
             </div>
         </div>
 
-       <div class="top-bar">
+        <div style="background:var(--card);padding:10px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+    
             <span style="font-size:13px;font-weight:bold;color:var(--p)">
                 📅 Month:
             </span>
@@ -235,10 +186,6 @@
                 onchange="changeMonth()"
                 style="padding:5px;border-radius:8px;border:1px solid #ccc;">
         </div>
-
-        <div class="top-layout"></div>
-
-        <div class="top-grid">
 
         <div class="stats-grid">
             <div class="stat-box"><small>Balance</small><b id="netBal" style="color:var(--p)">₹0</b></div>
@@ -249,6 +196,7 @@
             <div class="stat-box"><small>Real Savings</small><b id="realSav" style="color:var(--s)">₹0</b></div>
         </div>
 
+        <!-- NOTES PANEL -->
         <div class="notes-panel">
 
         <div class="notes-header">
@@ -260,7 +208,6 @@
 
         </div>
 
-        </div>
         <div class="entry-form">
             <div id="freeLimitMsg" style="font-size:12px;margin-bottom:10px;"></div>
             <input type="text" id="pName" class="dash-input" placeholder="Source/Name">
@@ -336,8 +283,6 @@
 </div>
 
 <script>
-
-    
     
 let currentUser = null, db = [];
 let USER_VERIFIED = false;
@@ -508,22 +453,6 @@ window.onload = function() {
         renderNotes();
 
 };
-
-async function addNote(){
-
-const text = prompt("Write note");
-
-if(!text) return;
-
-await fetch("/api/notes/add",{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({email:currentUser,note:text})
-});
-
-loadNotes();
-
-}
 
 async function handleLogin() {
     const email = document.getElementById('lEmail').value;
