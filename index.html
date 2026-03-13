@@ -526,7 +526,7 @@ notes:notes
 renderNotes();
 
 }
-    async function handleLogin() {
+    window.handleLogin = async function() {
         const email = document.getElementById('lEmail').value;
         const pass = btoa(document.getElementById('lPass').value);
         const res = await fetch(`${API_URL}/login`, {
@@ -572,7 +572,7 @@ renderNotes();
         document.getElementById('login-view').style.display = 'block';
     }
 
-    async function handleSignup(){
+    window.handleSignup = async function(){
         const email = document.getElementById('sEmail').value;
         const pass = btoa(document.getElementById('sPass').value);
 
@@ -955,3 +955,4 @@ list.innerHTML += `
     </script>
     </body>
     </html>
+    
