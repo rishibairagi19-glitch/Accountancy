@@ -295,7 +295,8 @@
     </div>
 
     <script>
-        
+
+    let notes = [];    
     let currentUser = null, db = [];
     let USER_VERIFIED = false;
     let ENTRY_LIMIT = 30;
@@ -303,63 +304,14 @@
 
     let sortField = "";
     let sortAsc = true;
+    let filteredData = [];
     //const API_URL = "http://rick-pc:5000/api";
     //const API_URL = "https://accountancy-pro.onrender.com/api";
     const API_URL = "/api";
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
 
-    function renderNotes(){
-
-    const box = document.getElementById("notesList");
-
-    box.innerHTML="";
-
-    notes.forEach((n,i)=>{
-
-    box.innerHTML += `
-    <div class="note-item">
-    <span>${n}</span>
-
-    <div class="note-actions">
-    <span onclick="editNote(${i})">✏</span>
-    <span onclick="deleteNote(${i})">🗑</span>
-    </div>
-
-    </div>
-    `;
-
-    });
-
-    }
-
-
-    function editNote(i){
-
-    const text = prompt("Edit Note",notes[i]);
-
-    if(!text) return;
-
-    notes[i]=text;
-
-    localStorage.setItem("rickNotes",JSON.stringify(notes));
-
-    renderNotes();
-
-    }
-
-    function deleteNote(i){
-
-    if(!confirm("Delete note?")) return;
-
-    notes.splice(i,1);
-
-    localStorage.setItem("rickNotes",JSON.stringify(notes));
-
-    renderNotes();
-
-    }
-
+    
     function changeMonth(){
 
         selectedMonth = document.getElementById("monthSelector").value;
@@ -440,6 +392,7 @@
                 document.getElementById('dashboard-view').style.display = 'block';
                 document.getElementById('pDate').valueAsDate = new Date();
                 render();
+                loadNotes();
             } else { logout(); }
         }
             const savedLimit = localStorage.getItem("rickBudgetLimit");
@@ -447,106 +400,81 @@
                 BUDGET_LIMIT = parseFloat(savedLimit);
             }
             document.getElementById("budgetInput").value = BUDGET_LIMIT;
-            renderNotes();
 
     };
 
     async function loadNotes(){
 
-    const res = await fetch(`/api/getUser?email=${currentUser}`);
+const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
 
-    const data = await res.json();
+const data = await res.json();
 
-    notes = data.notes || [];
+notes = data.notes || [];
 
-    renderNotes();
+renderNotes();
 
-    }
+}
 
-    async function addNote(){
+async function addNote(){
 
-    const text = prompt("Write Note");
+const text = prompt("Write Note");
 
-    if(!text) return;
+if(!text) return;
 
-    notes.push(text);
+notes.push(text);
 
-    await fetch("/api/updateNotes",{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-    email:currentUser,
-    notes:notes
-    })
-    });
+await fetch(`${API_URL}/updateNotes`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+notes:notes
+})
+});
 
-    renderNotes();
+renderNotes();
 
-    }
+}
 
-    async function editNote(i){
+async function editNote(i){
 
-    const text = prompt("Edit Note", notes[i]);
+const text = prompt("Edit Note", notes[i]);
 
-    if(!text) return;
+if(!text) return;
 
-    notes[i] = text;
+notes[i] = text;
 
-    await fetch("/api/updateNotes",{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-    email:currentUser,
-    notes:notes
-    })
-    });
+await fetch(`${API_URL}/updateNotes`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+notes:notes
+})
+});
 
-    renderNotes();
+renderNotes();
 
-    }
+}
 
-    async function deleteNote(i){
+async function deleteNote(i){
 
-    if(!confirm("Delete note?")) return;
+if(!confirm("Delete note?")) return;
 
-    notes.splice(i,1);
+notes.splice(i,1);
 
-    await fetch("/api/updateNotes",{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-    email:currentUser,
-    notes:notes
-    })
-    });
+await fetch(`${API_URL}/updateNotes`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+notes:notes
+})
+});
 
-    renderNotes();
+renderNotes();
 
-    }
-
-    function renderNotes(){
-
-    const box=document.getElementById("notesList");
-
-    box.innerHTML="";
-
-    notes.forEach((n,i)=>{
-
-    box.innerHTML+=`
-    <div class="note-item">
-    <span>${n}</span>
-
-    <div class="note-actions">
-    <span onclick="editNote(${i})">✏</span>
-    <span onclick="deleteNote(${i})">🗑</span>
-    </div>
-
-    </div>
-    `;
-
-    });
-
-    }
+}
     async function handleLogin() {
         const email = document.getElementById('lEmail').value;
         const pass = btoa(document.getElementById('lPass').value);
@@ -616,8 +544,8 @@
             // Auto Login After Signup
             currentUser = data.email;
             db = data.ledger_data || [];
+            loadNotes();
 
-            notes = data.notes || []; 
 
             USER_VERIFIED = false;
 
@@ -695,6 +623,30 @@
         document.getElementById('pAmt').value = "";
     }
 
+    function renderNotes(){
+
+const list = document.getElementById("notesList");
+
+list.innerHTML = "";
+
+notes.forEach((n,i)=>{
+
+list.innerHTML += `
+<div class="note-item">
+<span>${n}</span>
+
+<div class="note-actions">
+<span onclick="editNote(${i})">✏</span>
+<span onclick="deleteNote(${i})">🗑</span>
+</div>
+
+</div>
+`;
+
+});
+
+}
+
     function render() {
 
         const currentMonth = selectedMonth;
@@ -761,10 +713,10 @@
                     <td>${i.d}</td>
                     <td><span style="color:orange; cursor:pointer;" onclick="openEdit('${i.id}')">✎</span></td>
                     <td><span style="color:red; cursor:pointer;" onclick="deleteItem('${i.id}')">🗑</span></td>
-                </tr>` + body.innerHTML;
+                </tr>`;
             }
         });
-
+                body.innerHTML = rows;
         localStorage.setItem("rickData", JSON.stringify(db));
 
         // Update 6 Boxes
