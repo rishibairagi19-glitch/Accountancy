@@ -8,6 +8,38 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
         <style>
+
+            #loader{
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.6);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+            z-index:99999;
+            color:white;
+            font-family:Inter;
+            }
+
+            .spinner{
+            width:45px;
+            height:45px;
+            border:4px solid rgba(255,255,255,0.3);
+            border-top:4px solid #22C55E;
+            border-radius:50%;
+            animation:spin 0.8s linear infinite;
+            margin-bottom:10px;
+            }
+
+            @keyframes spin{
+            0%{transform:rotate(0deg);}
+            100%{transform:rotate(360deg);}
+            }
+
             .notes-panel{
             background:var(--card);
             padding:15px;
@@ -311,38 +343,46 @@
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
 
- async function syncFromServer(){
-
-    if(!currentUser) return;
-
-    try{
-
-        const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
-        const data = await res.json();
-
-        const newLedger = JSON.stringify(data.ledger_data || []);
-        const oldLedger = JSON.stringify(db);
-
-        const newNotes = JSON.stringify(data.notes || []);
-        const oldNotes = JSON.stringify(notes);
-
-        // ledger changed
-        if(newLedger !== oldLedger){
-            db = data.ledger_data || [];
-            render();
-        }
-
-        // notes changed
-        if(newNotes !== oldNotes){
-            notes = data.notes || [];
-            renderNotes();
-        }
-
-    }catch(err){
-        console.log("Sync error", err);
+    function showLoader(){
+    document.getElementById("loader").style.display="flex";
     }
 
-}
+    function hideLoader(){
+    document.getElementById("loader").style.display="none";
+    }
+
+    async function syncFromServer(){
+
+        if(!currentUser) return;
+
+        try{
+
+            const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+            const data = await res.json();
+
+            const newLedger = JSON.stringify(data.ledger_data || []);
+            const oldLedger = JSON.stringify(db);
+
+            const newNotes = JSON.stringify(data.notes || []);
+            const oldNotes = JSON.stringify(notes);
+
+            // ledger changed
+            if(newLedger !== oldLedger){
+                db = data.ledger_data || [];
+                render();
+            }
+
+            // notes changed
+            if(newNotes !== oldNotes){
+                notes = data.notes || [];
+                renderNotes();
+            }
+
+        }catch(err){
+            console.log("Sync error", err);
+        }
+
+    }
 
     
     function changeMonth(){
@@ -527,6 +567,7 @@ renderNotes();
 
 }
     async function handleLogin() {
+        showLoader();
         const email = document.getElementById('lEmail').value;
         const pass = btoa(document.getElementById('lPass').value);
         const res = await fetch(`${API_URL}/login`, {
@@ -534,6 +575,7 @@ renderNotes();
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ email, password: pass })
         });
+        hideLoader();
         const data = await res.json();
         if(res.ok) {
             currentUser = data.email;
@@ -573,6 +615,7 @@ renderNotes();
     }
 
     async function handleSignup(){
+        showLoader();
         const email = document.getElementById('sEmail').value;
         const pass = btoa(document.getElementById('sPass').value);
 
@@ -586,6 +629,7 @@ renderNotes();
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ email, password: pass })
         });
+        hideLoader();
 
         const data = await res.json();
 
@@ -953,7 +997,10 @@ list.innerHTML += `
     a.click();
     }
     </script>
+            <div id="loader">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
     </body>
     </html>
-
 
