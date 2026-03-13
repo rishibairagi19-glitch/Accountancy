@@ -126,9 +126,9 @@
             <div id="login-view">
                 <h1 style="text-align:center;">Vault Login</h1>
                 <input type="email" id="lEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
-                <input type="password" id="lPass" class="dash-input" style="background:white; color:#000" placeholder="Password" onkeydown="if(event.key==='Enter'){handleLogin()}">
+                <input type="password" id="lPass" class="dash-input" style="background:white; color:#000" placeholder="Password" onkeydown="if(event.key==='Enter'){window.handleLogin()}">
                 
-                <button class="btn-main" style="margin-top:20px" onclick="handleLogin()">Login</button>
+                <button class="btn-main" style="margin-top:20px" onclick="window.handleLogin()">Login</button>
 
                 <p style="text-align:center; margin-top:15px;">
                     New User? 
@@ -315,16 +315,10 @@
     const SUPABASE_URL = "https://eshvdtfkafsxgmenmlxh.supabase.co"
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMzg3MzcsImV4cCI6MjA4NzkxNDczN30.vR70DchpYEYwF_tid9Ocbj7KAm8Roan9Jo-Ble4YG5g";
 
-    let supabase;
-
-    if(!window.supabaseClient){
-        window.supabaseClient = window.supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_KEY
-        );
-    }
-
-supabase = window.supabaseClient;
+    const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
     supabase
     .channel('realtime-users')
