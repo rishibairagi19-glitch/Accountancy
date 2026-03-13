@@ -216,17 +216,43 @@ def home():
         "message": "Rick Accountancy API is running on Supabase"
     })
 
-@app.post("/api/updateNotes")
+# ---------------- UPDATE NOTES ----------------
+@app.route("/api/updateNotes", methods=["POST"])
 def update_notes():
+    try:
+        data = request.json
+        email = data.get("email")
+        notes = data.get("notes")
 
-    data = request.json
+        supabase.table("users") \
+            .update({"notes": notes}) \
+            .eq("email", email) \
+            .execute()
 
-    supabase.table("users").update({
-        "notes": data["notes"]
-    }).eq("email", data["email"]).execute()
+        return jsonify({"status": "ok"})
 
-    return {"success":True}
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    # ---------------- GET USER ----------------
+@app.route("/api/getUser", methods=["GET"])
+def get_user():
+    try:
+        email = request.args.get("email")
 
+        res = supabase.table("users") \
+            .select("*") \
+            .eq("email", email) \
+            .execute()
+
+        if not res.data:
+            return jsonify({"error": "User not found"}), 404
+
+        return jsonify(res.data[0])
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 # ---------------- RUN SERVER ----------------
 if __name__ == "__main__":
     # Render/Railway automatically sets PORT
