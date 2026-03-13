@@ -4,7 +4,6 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Accountancy X | Rick's PDF Ledger</title>
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
@@ -126,9 +125,9 @@
             <div id="login-view">
                 <h1 style="text-align:center;">Vault Login</h1>
                 <input type="email" id="lEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
-                <input type="password" id="lPass" class="dash-input" style="background:white; color:#000" placeholder="Password" onkeydown="if(event.key==='Enter'){window.handleLogin()}">
+                <input type="password" id="lPass" class="dash-input" style="background:white; color:#000" placeholder="Password" onkeydown="if(event.key==='Enter'){handleLogin()}">
                 
-                <button class="btn-main" style="margin-top:20px" onclick="window.handleLogin()">Login</button>
+                <button class="btn-main" style="margin-top:20px" onclick="handleLogin()">Login</button>
 
                 <p style="text-align:center; margin-top:15px;">
                     New User? 
@@ -312,50 +311,36 @@
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
 
-    const SUPABASE_URL = "https://eshvdtfkafsxgmenmlxh.supabase.co"
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMzg3MzcsImV4cCI6MjA4NzkxNDczN30.vR70DchpYEYwF_tid9Ocbj7KAm8Roan9Jo-Ble4YG5g";
+    async function syncFromServer(){
 
-    const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+    if(!currentUser) return;
 
-    supabase
-    .channel('realtime-users')
+    try{
 
-    .on(
-    'postgres_changes',
-    {
-    event: '*',
-    schema: 'public',
-    table: 'users'
-    },
+        const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+        const data = await res.json();
 
-    (payload) => {
+        // only update if data changed
+        const newData = JSON.stringify(data.ledger_data || []);
+        const oldData = JSON.stringify(db);
 
-    console.log("Realtime change detected");
+        if(newData !== oldData){
 
-    loadUserData(); // data dubara load
+            db = data.ledger_data || [];
+            notes = data.notes || [];
 
+            render();
+            renderNotes();
+
+        }
+
+    }catch(err){
+        console.log("Sync error", err);
     }
 
-    )
+}
 
-    .subscribe();
     
-    async function loadUserData(){
-
-    const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
-    const data = await res.json();
-
-    db = data.ledger_data || [];
-    notes = data.notes || [];
-
-    render();
-    renderNotes();
-
-    }
-
     function changeMonth(){
 
         selectedMonth = document.getElementById("monthSelector").value;
@@ -422,35 +407,46 @@
 
     window.onload = async function(){
 
-document.getElementById("monthSelector").value = selectedMonth;
+    document.getElementById("monthSelector").value = selectedMonth;
 
-if(localStorage.getItem("rickTheme") === 'light'){
-    document.body.classList.add('light-mode');
-}
+    if(localStorage.getItem("rickTheme") === 'light'){
+        document.body.classList.add('light-mode');
+    }
 
-const savedUser = localStorage.getItem("rickUser");
+    const savedUser = localStorage.getItem("rickUser");
 
-if(savedUser){
+    if(savedUser){
 
-    currentUser = savedUser;
+        currentUser = savedUser;
 
-    document.getElementById('auth-view').style.display = 'none';
-    document.getElementById('dashboard-view').style.display = 'block';
+        document.getElementById('auth-view').style.display = 'none';
+        document.getElementById('dashboard-view').style.display = 'block';
 
-    document.getElementById('pDate').valueAsDate = new Date();
+        document.getElementById('pDate').valueAsDate = new Date();
 
-    await loadUserData();
+        // ✅ SERVER SE DATA LOAD
+        const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+        const data = await res.json();
 
-    document.getElementById("userEmail").innerText = currentUser;
-}
+        db = data.ledger_data || [];
+        notes = data.notes || [];
+        USER_VERIFIED = data.verified || false;
 
-const savedLimit = localStorage.getItem("rickBudgetLimit");
+        document.getElementById("userEmail").innerText = currentUser;
 
-if(savedLimit){
-    BUDGET_LIMIT = parseFloat(savedLimit);
-}
+        render();
+        renderNotes();
+    }
 
-document.getElementById("budgetInput").value = BUDGET_LIMIT;
+    const savedLimit = localStorage.getItem("rickBudgetLimit");
+
+    if(savedLimit){
+        BUDGET_LIMIT = parseFloat(savedLimit);
+    }
+
+    document.getElementById("budgetInput").value = BUDGET_LIMIT;
+    // auto sync every 3 seconds
+    setInterval(syncFromServer, 3000);
 
 };
 
@@ -526,7 +522,7 @@ notes:notes
 renderNotes();
 
 }
-    window.handleLogin = async function() {
+    async function handleLogin() {
         const email = document.getElementById('lEmail').value;
         const pass = btoa(document.getElementById('lPass').value);
         const res = await fetch(`${API_URL}/login`, {
@@ -572,7 +568,7 @@ renderNotes();
         document.getElementById('login-view').style.display = 'block';
     }
 
-    window.handleSignup = async function(){
+    async function handleSignup(){
         const email = document.getElementById('sEmail').value;
         const pass = btoa(document.getElementById('sPass').value);
 
@@ -955,3 +951,4 @@ list.innerHTML += `
     </script>
     </body>
     </html>
+
