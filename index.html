@@ -9,6 +9,9 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
         <style>
 
+            
+            
+
             #loader{
             position:fixed;
             top:0;
@@ -298,6 +301,15 @@
                             <th>EDIT</th>
                             <th>DEL</th>
                         </tr>
+                        /* Ledger rows alternate colour */
+
+                        #ledgerBody tr:nth-child(odd){
+                        background:#2563eb;
+                        }
+
+                        #ledgerBody tr:nth-child(even){
+                        background:#9333ea;
+                        }
 
                     </thead>
                     <tbody id="ledgerBody"></tbody>
