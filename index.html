@@ -507,6 +507,7 @@ renderNotes();
 }
 
 async function addNote(){
+showLoader();
 
 const text = prompt("Write Note");
 
@@ -522,6 +523,7 @@ email:currentUser,
 notes:notes
 })
 });
+hideLoader();
 
 renderNotes();
 
@@ -665,6 +667,7 @@ renderNotes();
     }
 
     async function add() {
+        showLoader();
         const currentMonth = new Date().toISOString().slice(0,7);
 
     const monthlyEntries = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
@@ -712,6 +715,7 @@ renderNotes();
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ email: currentUser, ledger_data: db })
         });
+        hideLoader();
 
         // Clear fields after add
         document.getElementById('pName').value = "";
