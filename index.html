@@ -311,7 +311,7 @@
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
 
-    async function syncFromServer(){
+ async function syncFromServer(){
 
     if(!currentUser) return;
 
@@ -320,18 +320,22 @@
         const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
         const data = await res.json();
 
-        // only update if data changed
-        const newData = JSON.stringify(data.ledger_data || []);
-        const oldData = JSON.stringify(db);
+        const newLedger = JSON.stringify(data.ledger_data || []);
+        const oldLedger = JSON.stringify(db);
 
-        if(newData !== oldData){
+        const newNotes = JSON.stringify(data.notes || []);
+        const oldNotes = JSON.stringify(notes);
 
+        // ledger changed
+        if(newLedger !== oldLedger){
             db = data.ledger_data || [];
-            notes = data.notes || [];
-
             render();
-            renderNotes();
+        }
 
+        // notes changed
+        if(newNotes !== oldNotes){
+            notes = data.notes || [];
+            renderNotes();
         }
 
     }catch(err){
@@ -445,8 +449,8 @@
     }
 
     document.getElementById("budgetInput").value = BUDGET_LIMIT;
-    // auto sync every 3 seconds
-    setInterval(syncFromServer, 3000);
+    // auto sync every 2 seconds
+    setInterval(syncFromServer, 2000);
 
 };
 
@@ -951,4 +955,5 @@ list.innerHTML += `
     </script>
     </body>
     </html>
+
 
