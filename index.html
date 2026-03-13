@@ -296,6 +296,7 @@
 
     <script>
 
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
     let notes = [];    
     let currentUser = null, db = [];
     let USER_VERIFIED = false;
@@ -311,7 +312,50 @@
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
 
+    const SUPABASE_URL = "https://eshvdtfkafsxgmenmlxh.supabase.co"
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaHZkdGZrYWZzeGdtZW5tbHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMzg3MzcsImV4cCI6MjA4NzkxNDczN30.vR70DchpYEYwF_tid9Ocbj7KAm8Roan9Jo-Ble4YG5g";
+
+    const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+    );
+
+    supabase
+    .channel('realtime-users')
+
+    .on(
+    'postgres_changes',
+    {
+    event: 'UPDATE',
+    schema: 'public',
+    table: 'users'
+    },
+
+    (payload) => {
+
+    console.log("Realtime change detected");
+
+    loadUserData(); // data dubara load
+
+    }
+
+    )
+
+    .subscribe();
     
+    async function loadUserData(){
+
+    const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+    const data = await res.json();
+
+    db = data.ledger_data || [];
+    notes = data.notes || [];
+
+    render();
+    renderNotes();
+
+    }
+
     function changeMonth(){
 
         selectedMonth = document.getElementById("monthSelector").value;
@@ -416,6 +460,11 @@
     }
 
     document.getElementById("budgetInput").value = BUDGET_LIMIT;
+    window.onload = async function(){
+
+    await loadUserData();
+
+    };
 
 };
 
@@ -920,3 +969,4 @@ list.innerHTML += `
     </script>
     </body>
     </html>
+                                   
