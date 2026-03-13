@@ -376,32 +376,48 @@
         localStorage.setItem("rickTheme", document.body.classList.contains('light-mode') ? 'light' : 'dark');
     }
 
-    window.onload = function() {
-        document.getElementById("monthSelector").value = selectedMonth;
-        if(localStorage.getItem("rickTheme") === 'light') document.body.classList.add('light-mode');
-        
-        const savedUser = localStorage.getItem("rickUser");
-        const savedData = localStorage.getItem("rickData");
-        const loginTime = localStorage.getItem("rickLoginTime");
+    window.onload = async function(){
 
-        if(savedUser && savedData && loginTime) {
-            if(Date.now() - parseInt(loginTime) < SESSION_TIME) {
-                currentUser = savedUser;
-                db = JSON.parse(savedData);
-                document.getElementById('auth-view').style.display = 'none';
-                document.getElementById('dashboard-view').style.display = 'block';
-                document.getElementById('pDate').valueAsDate = new Date();
-                render();
-                loadNotes();
-            } else { logout(); }
-        }
-            const savedLimit = localStorage.getItem("rickBudgetLimit");
-            if(savedLimit) {
-                BUDGET_LIMIT = parseFloat(savedLimit);
-            }
-            document.getElementById("budgetInput").value = BUDGET_LIMIT;
+    document.getElementById("monthSelector").value = selectedMonth;
 
-    };
+    if(localStorage.getItem("rickTheme") === 'light'){
+        document.body.classList.add('light-mode');
+    }
+
+    const savedUser = localStorage.getItem("rickUser");
+
+    if(savedUser){
+
+        currentUser = savedUser;
+
+        document.getElementById('auth-view').style.display = 'none';
+        document.getElementById('dashboard-view').style.display = 'block';
+
+        document.getElementById('pDate').valueAsDate = new Date();
+
+        // ✅ SERVER SE DATA LOAD
+        const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+        const data = await res.json();
+
+        db = data.ledger_data || [];
+        notes = data.notes || [];
+        USER_VERIFIED = data.verified || false;
+
+        document.getElementById("userEmail").innerText = currentUser;
+
+        render();
+        renderNotes();
+    }
+
+    const savedLimit = localStorage.getItem("rickBudgetLimit");
+
+    if(savedLimit){
+        BUDGET_LIMIT = parseFloat(savedLimit);
+    }
+
+    document.getElementById("budgetInput").value = BUDGET_LIMIT;
+
+};
 
     async function loadNotes(){
 
