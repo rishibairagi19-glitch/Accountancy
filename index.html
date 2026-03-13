@@ -9,8 +9,142 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
         <style>
 
-            
-            
+            /* Animated Login CSS */
+
+            .auth-container{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+            background:#f6f5f7;
+            }
+
+            .container{
+            background:#fff;
+            border-radius:10px;
+            box-shadow:0 14px 28px rgba(0,0,0,0.25);
+            position:relative;
+            overflow:hidden;
+            width:800px;
+            max-width:100%;
+            min-height:480px;
+            }
+
+            .form-container{
+            position:absolute;
+            top:0;
+            height:100%;
+            transition:all 0.6s ease-in-out;
+            }
+
+            .sign-in-container{
+            left:0;
+            width:50%;
+            z-index:2;
+            }
+
+            .container.right-panel-active .sign-in-container{
+            transform:translateX(100%);
+            }
+
+            .sign-up-container{
+            left:0;
+            width:50%;
+            opacity:0;
+            z-index:1;
+            }
+
+            .container.right-panel-active .sign-up-container{
+            transform:translateX(100%);
+            opacity:1;
+            z-index:5;
+            }
+
+            form{
+            background:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+            padding:0 50px;
+            height:100%;
+            text-align:center;
+            }
+
+            input{
+            background:#eee;
+            border:none;
+            padding:12px;
+            margin:8px 0;
+            width:100%;
+            }
+
+            button{
+            border-radius:20px;
+            border:1px solid #ff4b2b;
+            background:#ff4b2b;
+            color:#fff;
+            font-size:12px;
+            padding:12px 45px;
+            cursor:pointer;
+            }
+
+            .overlay-container{
+            position:absolute;
+            top:0;
+            left:50%;
+            width:50%;
+            height:100%;
+            overflow:hidden;
+            transition:transform 0.6s ease-in-out;
+            }
+
+            .container.right-panel-active .overlay-container{
+            transform:translateX(-100%);
+            }
+
+            .overlay{
+            background:linear-gradient(to right,#ff4b2b,#ff416c);
+            color:#fff;
+            position:relative;
+            left:-100%;
+            height:100%;
+            width:200%;
+            transition:transform 0.6s ease-in-out;
+            }
+
+            .container.right-panel-active .overlay{
+            transform:translateX(50%);
+            }
+
+            .overlay-panel{
+            position:absolute;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            top:0;
+            height:100%;
+            width:50%;
+            padding:0 40px;
+            }
+
+            .overlay-left{
+            transform:translateX(-20%);
+            }
+
+            .container.right-panel-active .overlay-left{
+            transform:translateX(0);
+            }
+
+            .overlay-right{
+            right:0;
+            }
+
+            .container.right-panel-active .overlay-right{
+            transform:translateX(20%);
+            }
 
             #loader{
             position:fixed;
@@ -163,45 +297,53 @@
     </head>
     <body>
 
-    <div id="auth-view" class="auth-container">
-        <div class="iphone-ui">
+    <div id="auth-view">
 
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px;">
-                <div style="width: 35px; height: 35px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">A</div>
-                <div style="font-size:24px; font-weight:700;">Accountancy</div>
-            </div>
+    <!-- Animated Login -->
+    <div class="container" id="container">
 
-            <!-- LOGIN VIEW -->
-            <div id="login-view">
-                <h1 style="text-align:center;">Vault Login</h1>
-                <input type="email" id="lEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
-                <input type="password" id="lPass" class="dash-input" style="background:white; color:#000" placeholder="Password" onkeydown="if(event.key==='Enter'){handleLogin()}">
-                
-                <button class="btn-main" style="margin-top:20px" onclick="handleLogin()">Login</button>
-
-                <p style="text-align:center; margin-top:15px;">
-                    New User? 
-                    <span onclick="showSignup()" style="color:var(--primary); font-weight:bold; cursor:pointer;">Create Account</span>
-                </p>
-            </div>
-
-            <!-- SIGNUP VIEW -->
-            <div id="signup-view" style="display:none;">
-                <h1 style="text-align:center;">Create Account</h1>
-
-                <input type="email" id="sEmail" class="dash-input" style="background:white; color:#000" placeholder="Email">
-                <input type="password" id="sPass" class="dash-input" style="background:white; color:#000" placeholder="Password">
-
-                <button class="btn-main" style="margin-top:20px" onclick="handleSignup()">Sign Up</button>
-
-                <p style="text-align:center; margin-top:15px;">
-                    Already have account? 
-                    <span onclick="showLogin()" style="color:var(--primary); font-weight:bold; cursor:pointer;">Login</span>
-                </p>
-            </div>
-
+        <!-- signup -->
+        <div class="form-container sign-up-container">
+            <form onsubmit="event.preventDefault(); handleSignup();">
+                <h2>Create Account</h2>
+                <input type="email" id="sEmail" placeholder="Email">
+                <input type="password" id="sPass" placeholder="Password">
+                <button type="submit">Sign Up</button>
+            </form>
         </div>
+
+        <!-- login -->
+        <div class="form-container sign-in-container">
+            <form onsubmit="event.preventDefault(); handleLogin();">
+                <h2>Sign in</h2>
+                <input type="email" id="lEmail" placeholder="Email">
+                <input type="password" id="lPass" placeholder="Password">
+                <button type="submit">Sign In</button>
+            </form>
+        </div>
+
+        <!-- overlay -->
+        <div class="overlay-container">
+            <div class="overlay">
+
+                <div class="overlay-panel overlay-left">
+                    <h2>Welcome Back!</h2>
+                    <p>To keep connected login with your info</p>
+                    <button id="signIn">Sign In</button>
+                </div>
+
+                <div class="overlay-panel overlay-right">
+                    <h2>Hello Friend!</h2>
+                    <p>Enter your details and start journey</p>
+                    <button id="signUp">Sign Up</button>
+                </div>
+
+            </div>
+        </div>
+
     </div>
+
+</div>
     <div id="dashboard-view">
         <div class="container">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
@@ -467,6 +609,22 @@
         document.body.classList.toggle('light-mode');
         localStorage.setItem("rickTheme", document.body.classList.contains('light-mode') ? 'light' : 'dark');
     }
+
+    window.addEventListener("DOMContentLoaded", function(){
+
+const signUpBtn = document.getElementById("signUp");
+const signInBtn = document.getElementById("signIn");
+const container = document.getElementById("container");
+
+signUpBtn.addEventListener("click", () => {
+container.classList.add("right-panel-active");
+});
+
+signInBtn.addEventListener("click", () => {
+container.classList.remove("right-panel-active");
+});
+
+});
 
     window.onload = async function(){
 
@@ -1026,5 +1184,4 @@ list.innerHTML += `
         </div>
     </body>
     </html>
-
 
