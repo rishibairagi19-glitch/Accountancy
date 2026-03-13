@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Accountancy X | Rick's PDF Ledger</title>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
@@ -296,7 +297,6 @@
 
     <script>
 
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
     let notes = [];    
     let currentUser = null, db = [];
     let USER_VERIFIED = false;
@@ -326,7 +326,7 @@
     .on(
     'postgres_changes',
     {
-    event: 'UPDATE',
+    event: '*',
     schema: 'public',
     table: 'users'
     },
@@ -422,49 +422,35 @@
 
     window.onload = async function(){
 
-    document.getElementById("monthSelector").value = selectedMonth;
+document.getElementById("monthSelector").value = selectedMonth;
 
-    if(localStorage.getItem("rickTheme") === 'light'){
-        document.body.classList.add('light-mode');
-    }
+if(localStorage.getItem("rickTheme") === 'light'){
+    document.body.classList.add('light-mode');
+}
 
-    const savedUser = localStorage.getItem("rickUser");
+const savedUser = localStorage.getItem("rickUser");
 
-    if(savedUser){
+if(savedUser){
 
-        currentUser = savedUser;
+    currentUser = savedUser;
 
-        document.getElementById('auth-view').style.display = 'none';
-        document.getElementById('dashboard-view').style.display = 'block';
+    document.getElementById('auth-view').style.display = 'none';
+    document.getElementById('dashboard-view').style.display = 'block';
 
-        document.getElementById('pDate').valueAsDate = new Date();
-
-        // ✅ SERVER SE DATA LOAD
-        const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
-        const data = await res.json();
-
-        db = data.ledger_data || [];
-        notes = data.notes || [];
-        USER_VERIFIED = data.verified || false;
-
-        document.getElementById("userEmail").innerText = currentUser;
-
-        render();
-        renderNotes();
-    }
-
-    const savedLimit = localStorage.getItem("rickBudgetLimit");
-
-    if(savedLimit){
-        BUDGET_LIMIT = parseFloat(savedLimit);
-    }
-
-    document.getElementById("budgetInput").value = BUDGET_LIMIT;
-    window.onload = async function(){
+    document.getElementById('pDate').valueAsDate = new Date();
 
     await loadUserData();
 
-    };
+    document.getElementById("userEmail").innerText = currentUser;
+}
+
+const savedLimit = localStorage.getItem("rickBudgetLimit");
+
+if(savedLimit){
+    BUDGET_LIMIT = parseFloat(savedLimit);
+}
+
+document.getElementById("budgetInput").value = BUDGET_LIMIT;
 
 };
 
@@ -969,4 +955,3 @@ list.innerHTML += `
     </script>
     </body>
     </html>
-                                   
