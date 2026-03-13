@@ -713,10 +713,10 @@ list.innerHTML += `
                     <td>${i.d}</td>
                     <td><span style="color:orange; cursor:pointer;" onclick="openEdit('${i.id}')">✎</span></td>
                     <td><span style="color:red; cursor:pointer;" onclick="deleteItem('${i.id}')">🗑</span></td>
-                </tr>`;
+                </tr>` + body.innerHTML;
             }
         });
-                body.innerHTML = rows;
+
         localStorage.setItem("rickData", JSON.stringify(db));
 
         // Update 6 Boxes
