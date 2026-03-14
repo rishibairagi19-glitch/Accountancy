@@ -235,19 +235,86 @@
             }
 
             :root { 
-                --primary: #22C55E; --bg-login: linear-gradient(180deg, #E2F2E9 0%, #FFFFFF 100%);
-                --p: #6366f1; --s: #10b981; --d: #f43f5e; --blue: #3b82f6; --income: #fbbf24; 
-                --bg-dash: #0b0e14; --card: #161b22; --text: #ffffff; --input-bg: #0d1117;
-            }
+            /* Modern Palette */
+            --p: #6366f1; /* Indigo */
+            --s: #10b981; /* Emerald */
+            --d: #f43f5e; /* Rose */
+            --blue: #3b82f6; 
+            --income: #fbbf24; 
+            
+            /* Dark Mode Defaults */
+            --bg-dash: #0b0e14; 
+            --card: #161b22; 
+            --text: #f0f6fc; 
+            --text-dim: #8b949e;
+            --input-bg: #0d1117;
+            --border: rgba(255,255,255,0.1);
+            --shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
 
-            /* Light Mode Classes */
-            body.light-mode {
-                --bg-dash: #f3f4f6; --card: #ffffff; --text: #111827; --input-bg: #ffffff;
-            }
+        /* Light Mode Overrides */
+        body.light-mode {
+            --bg-dash: #f6f8fa; 
+            --card: #ffffff; 
+            --text: #1f2328; 
+            --text-dim: #57606a;
+            --input-bg: #ffffff;
+            --border: rgba(0,0,0,0.1);
+            --shadow: 0 8px 24px rgba(149, 157, 165, 0.2);
+        }
 
-            * { box-sizing: border-box; transition: 0.3s; }
-            body { margin: 0; min-height: 100vh; font-family: 'Inter', sans-serif; overflow-x: hidden; background: var(--bg-dash); color: var(--text); }
+        * { box-sizing: border-box; transition: background 0.3s, color 0.3s, border 0.3s; }
 
+        body { 
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-dash); 
+            color: var(--text); 
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Cards & Containers */
+        .stat-box, .budget-container, .entry-form, .search-panel, .table-container, .notes-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box small { color: var(--text-dim); }
+
+        /* Adaptive Table */
+        table { width: 100%; border-collapse: collapse; }
+        th { color: var(--p); text-align: left; padding: 12px; border-bottom: 2px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+
+        #ledgerBody tr:nth-child(odd) { background: transparent; }
+        #ledgerBody tr:hover { background: rgba(99, 102, 241, 0.05); }
+
+        /* Inputs */
+        .dash-input, .dash-select, .s-input {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px;
+            border-radius: 10px;
+            width: 100%;
+        }
+
+.dash-input:focus { border-color: var(--p); outline: none; }
             /* --- DASHBOARD UI --- */
             #dashboard-view { padding: 15px; display: none; }
             .container { max-width: 800px; margin: auto; }
@@ -275,20 +342,7 @@
             th { background: rgba(0,0,0,0.1); padding: 12px; color: var(--p); text-align: left; }
             td { padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
 
-            /* Ledger Row Alternate Colors */
-
-            #ledgerBody tr:nth-child(odd){
-            background:#1a1f27;
-            }
             
-            #ledgerBody tr:nth-child(even){
-            background:#11151c;
-            }
-            
-            /* hover effect */
-            #ledgerBody tr:hover{
-            background:#232936;
-            }
 
             #editModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; }
             .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; }
@@ -350,20 +404,24 @@
 </div>
     <div id="dashboard-view">
         <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
-        <div>
-            <span style="color: var(--p); font-weight: 900; font-family: 'Outfit';">RICK'S VAULT</span>
-            <div style="font-size:12px; opacity:0.8;">
-                Logged in: <span id="userEmail"></span>
-                <span id="verifyBadge" style="margin-left:10px;font-size:11px;"></span>
-            </div>
-        </div>
-
-        <div>
-            <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:20px; margin-right:15px;">🌓</button>
-            <span onclick="logout()" style="color: var(--d); cursor: pointer; font-weight:bold;">LOCK 🔒</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0;">
+    <div>
+        <span style="color: var(--p); font-size: 24px; font-weight: 900; font-family: 'Outfit'; letter-spacing: 1px;">RICK'S VAULT</span>
+        <div style="font-size:12px; color: var(--text-dim);">
+            👤 <span id="userEmail"></span>
+            <span id="verifyBadge" style="margin-left:8px; font-weight:bold;"></span>
         </div>
     </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <button onclick="toggleTheme()" class="theme-toggle" id="themeIcon">
+            🌙
+        </button>
+        <button onclick="logout()" style="background: var(--d); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer;">
+            LOCK 🔒
+        </button>
+    </div>
+</div>
 
             <div class="budget-container">
                 <div class="budget-header">
@@ -502,9 +560,9 @@
     let sortField = "";
     let sortAsc = true;
     let filteredData = [];
-    //const API_URL = "http://rick-pc:5000/api";
+    const API_URL = "http://rick-pc:5000/api";
     //const API_URL = "https://accountancy-pro.onrender.com/api";
-    const API_URL = "/api";
+    //const API_URL = "/api";
     const SESSION_TIME = 30 * 60 * 1000;
     let BUDGET_LIMIT = 30000;
 
@@ -609,11 +667,31 @@
     }
 
     // --- DARK/LIGHT MODE ---
-    function toggleTheme() {
-        document.body.classList.toggle('light-mode');
-        localStorage.setItem("rickTheme", document.body.classList.contains('light-mode') ? 'light' : 'dark');
+  function updateThemeIcon() {
+    const iconBtn = document.getElementById("themeIcon");
+    if (document.body.classList.contains('light-mode')) {
+        iconBtn.innerHTML = "☀️"; // Light mode mein Suraj
+    } else {
+        iconBtn.innerHTML = "🌙"; // Dark mode mein Chand
     }
+}
 
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem("rickTheme", isLight ? 'light' : 'dark');
+    updateThemeIcon();
+}
+
+// Window Onload mein ye line add karein
+window.onload = async function() {
+    // ... aapka baaki code ...
+    if(localStorage.getItem("rickTheme") === 'light'){
+        document.body.classList.add('light-mode');
+    }
+    updateThemeIcon(); // Icon set karega
+    // ...
+}
     window.addEventListener("DOMContentLoaded", function(){
 
 const signUpBtn = document.getElementById("signUp");
@@ -805,6 +883,7 @@ renderNotes();
         if(!email || !pass){
             alert("User and Password are Mendatory fields-Rick");
             return;
+            
         }
 
         const res = await fetch(`${API_URL}/register`, {
