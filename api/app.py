@@ -18,8 +18,8 @@ CORS(app)
 # Load environment variables from a .env file for security
 load_dotenv() 
 # Get Supabase URL and Key from environment variables (recommended practice)
-URL: str = os.environ.get("SUPABASE_URL")
-KEY: str = os.environ.get("SUPABASE_KEY")
+URL: str = os.os.getenv("SUPABASE_URL")
+KEY: str = os.os.getenv("SUPABASE_KEY")
 
 
 # Client initialization
