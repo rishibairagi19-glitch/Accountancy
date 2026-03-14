@@ -590,10 +590,10 @@
             }
 
             // notes changed
-            if(newNotes !== oldNotes){
-                notes = data.notes || [];
+            if(data.notes && data.notes.length > 0){
+                notes = data.notes;
                 renderNotes();
-            }
+                }
 
         }catch(err){
             console.log("Sync error", err);
@@ -737,7 +737,7 @@ BUDGET_LIMIT = parseFloat(savedLimit);
 
 document.getElementById("budgetInput").value = BUDGET_LIMIT;
 
-setInterval(syncFromServer, 2000);
+setInterval(syncFromServer, 5000);
 
 }
 
@@ -921,7 +921,7 @@ renderNotes();
 
     async function add() {
         showLoader();
-        const currentMonth = new Date().toISOString().slice(0,7);
+        const currentMonth = selectedMonth;
 
     const monthlyEntries = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
 
@@ -967,11 +967,19 @@ renderNotes();
 
         render();
 
+        try{
+
         await fetch(`${API_URL}/sync`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ email: currentUser, ledger_data: db })
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ email: currentUser, ledger_data: db })
         });
+
+        }catch(err){
+        console.log(err);
+        alert("Server error");
+        }
+
         hideLoader();
 
         // Clear fields after add
