@@ -133,7 +133,7 @@
             }
 
             .overlay-left{
-            transform:translateX(01%);
+            transform:translateX(1%);
             padding: 0 50px !important;
             }
 
@@ -373,7 +373,7 @@
         <!-- login -->
         <div class="form-container sign-in-container">
             <form onsubmit="event.preventDefault(); handleLogin();">
-                <h2>Sing in</h2>
+                <h2>Sign In</h2>
                 <input type="text" id="lEmail" placeholder="User ID">
                 <input type="password" id="lPass" placeholder="Password">
                 <button type="submit">Log In</button>
@@ -436,7 +436,7 @@
                     <div style="display:flex; align-items:center; gap:5px;">
                     <span>Limit: ₹</span>
                     <input type="number" id="budgetInput" 
-                        style="width:90px; padding:3px; border-radius:6px; border:1px solid #ccc;"
+                        style="width:90px; padding:3px; border-radius:6px; border:1px solid var(--border);"
                         onchange="updateBudgetLimit()">
                 </div>
                 </div>
@@ -450,7 +450,7 @@
 
                 <input type="month" id="monthSelector"
                     onchange="changeMonth()"
-                    style="padding:5px;border-radius:8px;border:1px solid #ccc;">
+                    style="padding:5px;border-radius:8px;border:1px solid var(--border);">
             </div>
 
             <div class="stats-grid">
@@ -684,14 +684,7 @@ function toggleTheme() {
 }
 
 // Window Onload mein ye line add karein
-window.onload = async function() {
-    // ... aapka baaki code ...
-    if(localStorage.getItem("rickTheme") === 'light'){
-        document.body.classList.add('light-mode');
-    }
-    updateThemeIcon(); // Icon set karega
-    // ...
-}
+
     window.addEventListener("DOMContentLoaded", function(){
 
 const signUpBtn = document.getElementById("signUp");
@@ -708,50 +701,51 @@ container.classList.remove("right-panel-active");
 
 });
 
-    window.onload = async function(){
+  window.onload = async function(){
 
-    document.getElementById("monthSelector").value = selectedMonth;
+document.getElementById("monthSelector").value = selectedMonth;
 
-    if(localStorage.getItem("rickTheme") === 'light'){
-        document.body.classList.add('light-mode');
-    }
+if(localStorage.getItem("rickTheme") === 'light'){
+    document.body.classList.add('light-mode');
+}
 
-    const savedUser = localStorage.getItem("rickUser");
+updateThemeIcon();
 
-    if(savedUser){
+const savedUser = localStorage.getItem("rickUser");
 
-        currentUser = savedUser;
+if(savedUser){
 
-        document.getElementById('auth-view').style.display = 'none';
-        document.getElementById('dashboard-view').style.display = 'block';
+currentUser = savedUser;
 
-        document.getElementById('pDate').valueAsDate = new Date();
+document.getElementById('auth-view').style.display = 'none';
+document.getElementById('dashboard-view').style.display = 'block';
 
-        // ✅ SERVER SE DATA LOAD
-        const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
-        const data = await res.json();
+document.getElementById('pDate').valueAsDate = new Date();
 
-        db = data.ledger_data || [];
-        notes = data.notes || [];
-        USER_VERIFIED = data.verified || false;
+const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+const data = await res.json();
 
-        document.getElementById("userEmail").innerText = currentUser;
+db = data.ledger_data || [];
+notes = data.notes || [];
+USER_VERIFIED = data.verified || false;
 
-        render();
-        renderNotes();
-    }
+document.getElementById("userEmail").innerText = currentUser;
 
-    const savedLimit = localStorage.getItem("rickBudgetLimit");
+render();
+renderNotes();
+}
 
-    if(savedLimit){
-        BUDGET_LIMIT = parseFloat(savedLimit);
-    }
+const savedLimit = localStorage.getItem("rickBudgetLimit");
 
-    document.getElementById("budgetInput").value = BUDGET_LIMIT;
-    // auto sync every 2 seconds
-    setInterval(syncFromServer, 2000);
+if(savedLimit){
+BUDGET_LIMIT = parseFloat(savedLimit);
+}
 
-};
+document.getElementById("budgetInput").value = BUDGET_LIMIT;
+
+setInterval(syncFromServer, 2000);
+
+}
 
     async function loadNotes(){
 
@@ -770,7 +764,10 @@ showLoader();
 
 const text = prompt("Write Note");
 
-if(!text) return;
+if(!text){
+hideLoader();
+return;
+}
 
 notes.push(text);
 
@@ -877,14 +874,15 @@ renderNotes();
 
     async function handleSignup(){
         showLoader();
+        document.getElementById("verifyBadge").innerHTML = "⚠ FREE USER";
         const email = document.getElementById('sEmail').value;
         const pass = btoa(document.getElementById('sPass').value);
 
         if(!email || !pass){
-            alert("User and Password are Mendatory fields-Rick");
-            return;
-            
-        }
+        alert("User and Password are Mandatory fields - Rick");
+        hideLoader();
+        return;
+    }
 
         const res = await fetch(`${API_URL}/register`, {
             method: 'POST',
@@ -905,6 +903,7 @@ renderNotes();
 
 
             USER_VERIFIED = false;
+            document.getElementById("verifyBadge").innerHTML = "⚠ FREE USER";
 
             localStorage.setItem("rickUser", currentUser);
             localStorage.setItem("rickData", JSON.stringify(db));
@@ -934,8 +933,8 @@ renderNotes();
 
     if(!USER_VERIFIED && monthlyEntries.length >= ENTRY_LIMIT){
 
-        alert("Free account limit reached (30 entries/month). Verify account by colling 6263494837 Rishi.");
-
+        alert("Free account limit reached (30 entries/month). Verify account by calling 6263494837 Rishi.");
+        hideLoader();
         return;
 
     }
@@ -944,7 +943,10 @@ renderNotes();
         const d = document.getElementById('pDate').value;
         const t = document.getElementById('pType').value;
 
-        if(!n || isNaN(a) || !d) return;
+        if(!n || isNaN(a) || !d){
+        hideLoader();
+        return;
+    }
 
         // ❌ Prevent Duplicate (same name, amount, date, type)
         const alreadyExists = db.some(item => 
@@ -956,6 +958,7 @@ renderNotes();
 
         if(alreadyExists){
             alert("This entry already exists!");
+            hideLoader();
             return;
         }
 
