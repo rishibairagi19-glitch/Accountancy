@@ -9,6 +9,22 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
         <style>
 
+            /* Header को ऊपर फिक्स करने के लिए */
+.header-fixed {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--bg-dash);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+/* स्क्रॉल स्मूथ करने के लिए */
+#dashboard-view {
+    height: 100vh;
+    overflow-y: auto;
+}
+
             /* Animated Login CSS */
 
             .auth-container {
@@ -78,7 +94,7 @@
             border:none;
             padding:12px;
             margin:8px 0;
-            width:100%;
+            width:150px;
             }
 
             button{
@@ -316,8 +332,8 @@
 
 .dash-input:focus { border-color: var(--p); outline: none; }
             /* --- DASHBOARD UI --- */
-            #dashboard-view { padding: 15px; display: none; }
-            .container { max-width: 800px; margin: auto; }
+            #dashboard-view { padding: 0 15px; display: none; }
+            .container { max-width: 800px; margin: 0 auto; }
             
             /* 6-Box Stats Grid */
             .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
@@ -403,56 +419,33 @@
 
 </div>
     <div id="dashboard-view">
-        <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0;">
-    <div>
-        <span style="color: var(--p); font-size: 24px; font-weight: 900; font-family: 'Outfit'; letter-spacing: 1px;">RICK'S VAULT</span>
-        <div style="font-size:12px; color: var(--text-dim);">
-            👤 <span id="userEmail"></span>
-            <span id="verifyBadge" style="margin-left:8px; font-weight:bold;"></span>
-        </div>
-    </div>
-
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <button onclick="toggleTheme()" class="theme-toggle" id="themeIcon">
-            🌙
-        </button>
-        <button onclick="logout()" style="background: var(--d); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer;">
-            LOCK 🔒
-        </button>
-    </div>
-</div>
-
-            <div class="budget-container">
-                <div class="budget-header">
-                    <span>MONTHLY EXPENSE TARGET</span>
-                    <span id="budgetPercent">0%</span>
-                </div>
-                <div class="progress-bg">
-                    <div id="budgetFill" class="progress-fill"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px; margin-top: 5px; opacity: 0.8;">
-                    <span id="currentExpStatus">Used: ₹0</span>
-                    <div style="display:flex; align-items:center; gap:5px;">
-                    <span>Limit: ₹</span>
-                    <input type="number" id="budgetInput" 
-                        style="width:90px; padding:3px; border-radius:6px; border:1px solid var(--border);"
-                        onchange="updateBudgetLimit()">
-                </div>
-                </div>
-            </div>
-
-            <div style="background:var(--card);padding:10px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+    <div class="container">
         
-                <span style="font-size:13px;font-weight:bold;color:var(--p)">
-                    📅 Month:
-                </span>
+        <div class="header-fixed">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
+                <div>
+                    <span style="color: var(--p); font-size: 24px; font-weight: 900; font-family: 'Outfit'; letter-spacing: 1px;">RICK'S VAULT</span>
+                    <div style="font-size:11px; color: var(--text-dim); margin-top: 2px;">
+                        👤 <span id="userEmail"></span>
+                        <span id="verifyBadge" style="margin-left:5px; font-weight:bold;"></span>
+                    </div>
+                </div>
 
-                <input type="month" id="monthSelector"
-                    onchange="changeMonth()"
-                    style="padding:5px;border-radius:8px;border:1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="month" id="monthSelector" onchange="changeMonth()" 
+                           style="padding: 6px; border-radius: 8px; border: 1px solid var(--border); 
+                                  background: var(--input-bg); color: var(--text); font-size: 13px; font-weight: bold; cursor: pointer;">
+                    
+                    <button onclick="toggleTheme()" class="theme-toggle" id="themeIcon" style="padding: 6px 10px;">🌙</button>
+                    
+                    <button onclick="logout()" style="background: var(--d); color: white; border: none; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                        LOCK 🔒
+                    </button>
+                </div>
             </div>
+        </div>
 
+        <div style="margin-top: 10px;"> 
             <div class="stats-grid">
                 <div class="stat-box"><small>Balance</small><b id="netBal" style="color:var(--p)">₹0</b></div>
                 <div class="stat-box"><small>Income</small><b id="totalInc" style="color:var(--s)">₹0</b></div>
@@ -461,6 +454,7 @@
                 <div class="stat-box"><small>Udhaar Mila</small><b id="totalRec" style="color:var(--income)">₹0</b></div>
                 <div class="stat-box"><small>Real Savings</small><b id="realSav" style="color:var(--s)">₹0</b></div>
             </div>
+
 
             <!-- NOTES PANEL -->
             <div class="notes-panel">
