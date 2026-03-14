@@ -455,6 +455,22 @@
                 <div class="stat-box"><small>Real Savings</small><b id="realSav" style="color:var(--s)">₹0</b></div>
             </div>
 
+            <div class="budget-container">
+
+            <div class="budget-header">
+            <span>Monthly Budget</span>
+            <span id="budgetPercent">0%</span>
+            </div>
+
+            <div class="progress-bg">
+            <div class="progress-fill" id="budgetFill"></div>
+            </div>
+
+            <div style="font-size:12px;margin-top:6px;" id="currentExpStatus">
+            Used: ₹0
+            </div>
+
+            </div>
 
             <!-- NOTES PANEL -->
             <div class="notes-panel">
@@ -681,179 +697,196 @@ function toggleTheme() {
 
     window.addEventListener("DOMContentLoaded", function(){
 
-const signUpBtn = document.getElementById("signUp");
-const signInBtn = document.getElementById("signIn");
-const container = document.getElementById("container");
+    const signUpBtn = document.getElementById("signUp");
+    const signInBtn = document.getElementById("signIn");
+    const container = document.getElementById("container");
 
-signUpBtn.addEventListener("click", () => {
-container.classList.add("right-panel-active");
-});
+    signUpBtn.addEventListener("click", () => {
+    container.classList.add("right-panel-active");
+    });
 
-signInBtn.addEventListener("click", () => {
-container.classList.remove("right-panel-active");
-});
+    signInBtn.addEventListener("click", () => {
+    container.classList.remove("right-panel-active");
+    });
 
-});
+    });
 
-  window.onload = async function(){
+    window.onload = async function(){
 
-document.getElementById("monthSelector").value = selectedMonth;
+    document.getElementById("monthSelector").value = selectedMonth;
 
-if(localStorage.getItem("rickTheme") === 'light'){
-    document.body.classList.add('light-mode');
-}
+    if(localStorage.getItem("rickTheme") === 'light'){
+        document.body.classList.add('light-mode');
+    }
 
-updateThemeIcon();
+    updateThemeIcon();
 
-const savedUser = localStorage.getItem("rickUser");
+    const savedUser = localStorage.getItem("rickUser");
 
-if(savedUser){
+    if(savedUser){
 
-currentUser = savedUser;
+    currentUser = savedUser;
 
-document.getElementById('auth-view').style.display = 'none';
-document.getElementById('dashboard-view').style.display = 'block';
+    document.getElementById('auth-view').style.display = 'none';
+    document.getElementById('dashboard-view').style.display = 'block';
 
-document.getElementById('pDate').valueAsDate = new Date();
+    document.getElementById('pDate').valueAsDate = new Date();
 
-const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
-const data = await res.json();
+    const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+    const data = await res.json();
 
-db = data.ledger_data || [];
-notes = data.notes || [];
-USER_VERIFIED = data.verified || false;
+    db = data.ledger_data || [];
+    notes = data.notes || [];
+    USER_VERIFIED = data.verified || false;
 
-document.getElementById("userEmail").innerText = currentUser;
+    document.getElementById("userEmail").innerText = currentUser;
+    document.getElementById("verifyBadge").innerHTML =
+    USER_VERIFIED ? "✅ VERIFIED" : "⚠ FREE USER";
 
-render();
-renderNotes();
-}
+    render();
+    renderNotes();
+    }
 
-const savedLimit = localStorage.getItem("rickBudgetLimit");
+    const savedLimit = localStorage.getItem("rickBudgetLimit");
 
-if(savedLimit){
-BUDGET_LIMIT = parseFloat(savedLimit);
-}
+    if(savedLimit){
+    BUDGET_LIMIT = parseFloat(savedLimit);
+    }
 
-document.getElementById("budgetInput").value = BUDGET_LIMIT;
+    document.getElementById("budgetInput").value = BUDGET_LIMIT;
 
-setInterval(syncFromServer, 5000);
+    setInterval(syncFromServer, 5000);
 
-}
+    }
 
-    async function loadNotes(){
+        async function loadNotes(){
 
-const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+    const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
 
-const data = await res.json();
+    const data = await res.json();
 
-notes = data.notes || [];
+    notes = data.notes || [];
 
-renderNotes();
+    renderNotes();
 
-}
+    }
 
-async function addNote(){
-showLoader();
+    async function addNote(){
+    showLoader();
 
-const text = prompt("Write Note");
+    const text = prompt("Write Note");
 
-if(!text){
-hideLoader();
-return;
-}
+    if(!text){
+    hideLoader();
+    return;
+    }
 
-notes.push(text);
+    notes.push(text);
 
-await fetch(`${API_URL}/updateNotes`,{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-email:currentUser,
-notes:notes
-})
-});
-hideLoader();
+    await fetch(`${API_URL}/updateNotes`,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+    email:currentUser,
+    notes:notes
+    })
+    });
+    hideLoader();
 
-renderNotes();
+    renderNotes();
 
-}
+    }
 
-async function editNote(i){
+    async function editNote(i){
 
-const text = prompt("Edit Note", notes[i]);
+    const text = prompt("Edit Note", notes[i]);
 
-if(!text) return;
+    if(!text) return;
 
-notes[i] = text;
+    notes[i] = text;
 
-await fetch(`${API_URL}/updateNotes`,{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-email:currentUser,
-notes:notes
-})
-});
+    await fetch(`${API_URL}/updateNotes`,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+    email:currentUser,
+    notes:notes
+    })
+    });
 
-renderNotes();
+    renderNotes();
 
-}
+    }
 
-async function deleteNote(i){
+    async function deleteNote(i){
 
-if(!confirm("Delete note?")) return;
+    if(!confirm("Delete note?")) return;
 
-notes.splice(i,1);
+    notes.splice(i,1);
 
-await fetch(`${API_URL}/updateNotes`,{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-email:currentUser,
-notes:notes
-})
-});
+    await fetch(`${API_URL}/updateNotes`,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+    email:currentUser,
+    notes:notes
+    })
+    });
 
-renderNotes();
+    renderNotes();
 
-}
-    async function handleLogin() {
-        showLoader();
-        const email = document.getElementById('lEmail').value;
-        const pass = btoa(document.getElementById('lPass').value);
-        const res = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ email, password: pass })
-        });
-        hideLoader();
-        const data = await res.json();
-        if(res.ok) {
-            currentUser = data.email;
-            db = data.ledger_data;
+    }
+        async function handleLogin() {
 
-            USER_VERIFIED = data.verified || false;
+    showLoader();
 
-            if(USER_VERIFIED){
-                document.getElementById("verifyBadge").innerHTML = "✅ VERIFIED";
-            }else{
-                document.getElementById("verifyBadge").innerHTML = "⚠ FREE USER";
-            }
+    try{
 
-            document.getElementById("userEmail").innerText = currentUser;
+    const email = document.getElementById('lEmail').value;
+    const pass = btoa(document.getElementById('lPass').value);
 
-            localStorage.setItem("rickUser", currentUser);
-            localStorage.setItem("rickData", JSON.stringify(db));
-            localStorage.setItem("rickLoginTime", Date.now().toString());
-            document.getElementById('auth-view').style.display = 'none';
-            document.getElementById('dashboard-view').style.display = 'block';
-            document.getElementById('pDate').valueAsDate = new Date();
-            render();
-            loadNotes();
-        } else {
-            alert(data.message || "Log-in Failed");
-        }
+    const res = await fetch(`${API_URL}/login`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ email, password: pass })
+    });
+
+    const data = await res.json();
+
+    if(res.ok){
+
+    currentUser = data.email;
+    db = data.ledger_data;
+
+    USER_VERIFIED = data.verified || false;
+
+    document.getElementById("verifyBadge").innerHTML =
+    USER_VERIFIED ? "✅ VERIFIED" : "⚠ FREE USER";
+
+    document.getElementById("userEmail").innerText = currentUser;
+
+    localStorage.setItem("rickUser", currentUser);
+
+    document.getElementById('auth-view').style.display = 'none';
+    document.getElementById('dashboard-view').style.display = 'block';
+
+    document.getElementById('pDate').valueAsDate = new Date();
+
+    render();
+    loadNotes();
+
+    }else{
+    alert(data.message || "Login Failed");
+    }
+
+    }catch(err){
+
+    console.log(err);
+    alert("Server not reachable");
+
+    }
+
+    hideLoader();
     }
 
     function showSignup(){
