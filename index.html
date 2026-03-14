@@ -11,24 +11,26 @@
 
             /* Animated Login CSS */
 
-            .auth-container{
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            height:100vh;
-            background:#f6f5f7;
-            }
+            .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Poori screen ki unchai lega */
+            width: 100vw;      /* Poori screen ki chaudai lega */
+            background: #f6f5f7;
+            margin: 0;
+        }
 
-            .login-container{
-            background:#fff;
-            border-radius:10px;
-            box-shadow:0 14px 28px rgba(0,0,0,0.25);
-            position:relative;
-            overflow:hidden;
-            width:800px;
-            max-width:100%;
-            min-height:480px;
-            }
+        .login-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+            width: 800px;      /* Ye card ki width hai */
+            max-width: 95%;    /* Mobile par screen se bahar nahi jayega */
+            min-height: 480px;
+        }
 
             .form-container{
             position:absolute;
@@ -38,7 +40,7 @@
             }
 
             .sign-in-container{
-            left:0;
+            left: 0;
             width:50%;
             z-index:2;
             }
@@ -81,7 +83,7 @@
 
             button{
             border-radius:20px;
-            border:1px solid #ff4b2b;
+            border:2px solid #faf9f8;
             background:#ff4b2b;
             color:#fff;
             font-size:12px;
@@ -131,10 +133,12 @@
             }
 
             .overlay-left{
-            transform:translateX(-20%);
+            transform:translateX(01%);
+            padding: 0 50px !important;
             }
 
-            .container.right-panel-active .overlay-left{
+            .container.right-panel-active 
+            .overlay-left{
             transform:translateX(0);
             }
 
@@ -297,7 +301,7 @@
     </head>
     <body>
 
-    <div id="auth-view">
+    <div id="auth-view" class="auth-container">
 
     <!-- Animated Login -->
     <div class="login-container" id="container">
@@ -318,7 +322,7 @@
                 <h2>Sing in</h2>
                 <input type="text" id="lEmail" placeholder="User ID">
                 <input type="password" id="lPass" placeholder="Password">
-                <button type="submit">log In</button>
+                <button type="submit">Log In</button>
             </form>
         </div>
 
@@ -328,14 +332,14 @@
 
                 <div class="overlay-panel overlay-left">
                     <h2>Welcome Back!</h2>
-                    <p>To keep connected login with your info</p>
-                    <button id="signIn">Sign In</button>
+                    <p style="text-align: center;">Login to Resume your journey </p>
+                    <button id="signIn">Old User Log In</button>
                 </div>
 
                 <div class="overlay-panel overlay-right">
                     <h2>Hello Friend!</h2>
-                    <p>Enter your details and start journey</p>
-                    <button id="signUp">Sign Up</button>
+                    <p style="text-align: center;">Enter your details and start journey</p>
+                    <button id="signUp">New User Sign Up</button>
                 </div>
 
             </div>
