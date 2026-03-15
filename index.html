@@ -9,6 +9,30 @@
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
             <style>
 
+                #entryModal{
+
+                position:fixed;
+
+                top:0;
+
+                left:0;
+
+                width:100%;
+
+                height:100%;
+
+                background:rgba(0,0,0,0.85);
+
+                display:none;
+
+                justify-content:center;
+
+                align-items:center;
+
+                z-index:9999;
+
+                }
+
                 /* Header को ऊपर फिक्स करने के लिए */
     .header-fixed {
         position: sticky;
@@ -204,7 +228,7 @@
                 border:1px solid rgba(255,255,255,0.1);
                 margin-bottom:20px;
 
-                max-height:220px;   /* panel height limit */
+                max-height:300px;   /* panel height limit */
                 overflow-y:auto;    /* vertical scroll */
                 }
 
@@ -455,6 +479,19 @@
                     <div class="stat-box"><small>Real Savings</small><b id="realSav" style="color:var(--s)">₹0</b></div>
                 </div>
 
+                <!-- REMINDER PANEL -->
+                <div class="notes-panel">
+
+                <div class="notes-header">
+                <span>⏰ Today Reminders</span>
+                <button onclick="toggleOldReminders()" class="btn-add" style="margin-top:5px;font-size:12px;width:120px"> Show/Hide Old </button>
+                <button onclick="addReminder()">➕</button>
+                
+                </div>
+
+                <div id="reminderList"></div>
+
+                </div>
                
 
                 <!-- NOTES PANEL -->
@@ -469,20 +506,9 @@
 
                 </div>
 
-                <div class="entry-form">
+                <button class="btn-add" onclick="openEntryModal()">➕ NEW ENTRY</button>
                     <div id="freeLimitMsg" style="font-size:12px;margin-bottom:10px;"></div>
-                    <input type="text" id="pName" class="dash-input" placeholder="Source/Name">
-                    <input type="number" id="pAmt" class="dash-input" placeholder="Amount">
-                    <div style="display:flex; gap:10px;">
-                        <input type="date" id="pDate" class="dash-input">
-                        <select id="pType" class="dash-select">
-                            <option value="inc">Salary / Income (+)</option>
-                            <option value="exp">Expense (-)</option>
-                            <option value="lent">Lent (Udhaar Diya) (-)</option>
-                            <option value="rec">Lent Back (Wapas Mila) (+)</option>
-                        </select>
-                    </div>
-                    <button class="btn-add" onclick="add()">UPDATE LEDGER</button>
+                    
                 </div>
 
                 <div class="search-panel">
@@ -525,6 +551,13 @@
         </div>
 
         <div id="editModal">
+
+
+
+       
+
+
+
             <div class="modal-content">
                 <h2 style="margin-top:0; color:var(--income)">Edit Transaction</h2>
                 <input type="hidden" id="editId">
@@ -544,22 +577,85 @@
             </div>
         </div>
 
+
+         <div id="entryModal">
+
+<div class="modal-content">
+
+<h2 style="margin-top:0;color:var(--p)">Add Transaction</h2>
+
+<input type="text" id="pName" class="dash-input" placeholder="Source/Name">
+
+<input type="number" id="pAmt" class="dash-input" placeholder="Amount">
+
+<input type="date" id="pDate" class="dash-input">
+
+<select id="pType" class="dash-select">
+
+<option value="inc">Salary / Income (+)</option>
+
+<option value="exp">Expense (-)</option>
+
+<option value="lent">Lent (Udhaar Diya)</option>
+
+<option value="rec">Lent Back</option>
+
+</select>
+
+<div style="display:flex;gap:10px;margin-top:20px;">
+
+<button class="btn-add" onclick="add()">SAVE</button>
+
+<button class="btn-add" style="background:#444" onclick="closeEntryModal()">CANCEL</button>
+
+</div>
+
+</div>
+
+</div>
+
         <script>
 
-        let notes = [];    
+        let notes = [];   
+        let reminders = []; 
         let currentUser = null, db = [];
         let USER_VERIFIED = false;
         let ENTRY_LIMIT = 30;
         let selectedMonth = new Date().toISOString().slice(0,7);
+        let showOldReminders = false;
 
         let sortField = "";
         let sortAsc = true;
         let filteredData = [];
-        //const API_URL = "http://rick-pc:5000/api";
+        const API_URL = "http://rick-pc:5000/api";
         //const API_URL = "https://accountancy-pro.onrender.com/api";
-        const API_URL = "/api";
+        //const API_URL = "/api";
         const SESSION_TIME = 30 * 60 * 1000;
         let BUDGET_LIMIT = 30000;
+
+        function toggleOldReminders(){
+
+        showOldReminders = !showOldReminders;
+
+        renderReminders();
+
+        }
+
+
+        function openEntryModal(){
+
+document.getElementById("entryModal").style.display="flex";
+
+/* Default current date */
+document.getElementById("pDate").valueAsDate = new Date();
+
+}
+
+function closeEntryModal(){
+
+document.getElementById("entryModal").style.display="none";
+
+}
 
         function showLoader(){
         document.getElementById("loader").style.display="flex";
@@ -696,6 +792,21 @@
 
         });
 
+       window.onclick = function(e){
+
+        const entryModal = document.getElementById("entryModal");
+        const editModal = document.getElementById("editModal");
+
+        if(e.target === entryModal){
+        closeEntryModal();
+        }
+
+        if(e.target === editModal){
+        closeModal();
+        }
+
+        }
+
         window.onload = async function(){
 
         document.getElementById("monthSelector").value = selectedMonth;
@@ -730,6 +841,7 @@
 
         render();
         renderNotes();
+        loadReminders();
         }
 
        
@@ -737,7 +849,134 @@
 
         }
 
-            async function loadNotes(){
+        async function loadReminders(){
+
+const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
+const data = await res.json();
+
+reminders = data.reminders || [];
+
+renderReminders();
+
+}
+
+async function addReminder(){
+
+const text = prompt("Task Name");
+
+if(!text) return;
+
+const date = prompt("Task Date (YYYY-MM-DD)", new Date().toISOString().slice(0,10));
+
+reminders.push({
+id: Date.now(),
+task: text,
+date: date
+});
+
+await fetch(`${API_URL}/updateReminders`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+reminders:reminders
+})
+});
+
+renderReminders();
+
+}
+
+async function editReminder(id){
+
+const r = reminders.find(x=>x.id==id);
+
+const text = prompt("Edit Task", r.task);
+if(!text) return;
+
+const date = prompt("Edit Date", r.date);
+
+r.task = text;
+r.date = date;
+
+await fetch(`${API_URL}/updateReminders`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+reminders:reminders
+})
+});
+
+renderReminders();
+
+}
+
+async function deleteReminder(id){
+
+if(!confirm("Delete reminder?")) return;
+
+reminders = reminders.filter(x=>x.id!=id);
+
+await fetch(`${API_URL}/updateReminders`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+reminders:reminders
+})
+});
+
+renderReminders();
+
+}
+
+        function renderReminders(){
+
+        const list = document.getElementById("reminderList");
+        list.innerHTML = "";
+
+        const today = new Date().toISOString().slice(0,10);
+
+        // आज से आगे वाले reminders filter
+        //let upcoming = reminders.filter(r => r.date >= today);
+        let upcoming;
+
+        if(showOldReminders){
+            upcoming = reminders; // सब दिखेंगे
+        }else{
+            upcoming = reminders.filter(r => r.date >= today); // old hide
+        }
+
+        // date के हिसाब से sort
+        upcoming.sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+        upcoming.forEach(r=>{
+
+        const isToday = r.date === today;
+
+        list.innerHTML += `
+        <div class="note-item">
+
+        <span>
+        ${isToday ? "🔥 TODAY -" : "📅 "+r.date+" -"} 
+        ${r.task}
+        </span>
+
+        <div class="note-actions">
+        <span onclick="editReminder(${r.id})">✏</span>
+        <span onclick="deleteReminder(${r.id})">🗑</span>
+        </div>
+
+        </div>
+        `;
+
+        });
+
+        }
+
+
+        async function loadNotes(){
 
         const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
 
@@ -852,6 +1091,7 @@
 
         render();
         loadNotes();
+        loadReminders();
 
         }else{
         alert(data.message || "Login Failed");
@@ -918,6 +1158,7 @@
                 document.getElementById('dashboard-view').style.display = 'block';
                 document.getElementById('pDate').valueAsDate = new Date();
                 render();
+                loadReminders();
             } else {
                 alert(data.message || "Signup Failed");
             }
@@ -996,6 +1237,8 @@
             // Clear fields after add
             document.getElementById('pName').value = "";
             document.getElementById('pAmt').value = "";
+            document.getElementById('pDate').valueAsDate = new Date();
+            closeEntryModal();
         }
 
         function renderNotes(){
