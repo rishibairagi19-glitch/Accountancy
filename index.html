@@ -12,25 +12,28 @@
                 #entryModal{
 
                 position:fixed;
-
                 top:0;
-
                 left:0;
-
                 width:100%;
-
                 height:100%;
-
                 background:rgba(0,0,0,0.85);
-
                 display:none;
-
                 justify-content:center;
-
                 align-items:center;
-
                 z-index:9999;
+                }
 
+                #reminderModal{
+                position:fixed;
+                top:0;
+                left:0;
+                width:100%;
+                height:100%;
+                background:rgba(0,0,0,0.85);
+                display:none;
+                justify-content:center;
+                align-items:center;
+                z-index:9999;
                 }
 
                 /* Header को ऊपर फिक्स करने के लिए */
@@ -221,6 +224,17 @@
                 100%{transform:rotate(360deg);}
                 }
 
+                .small-btn{
+                background:var(--p);
+                border:none;
+                color:white;
+                padding:4px 10px;
+                font-size:11px;
+                border-radius:6px;
+                cursor:pointer;
+                width:auto;
+                }
+
                 .notes-panel{
                 background:var(--card);
                 padding:15px;
@@ -385,7 +399,23 @@
                 
 
                 #editModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; }
-                .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; }
+                
+                .modal{
+                    display:none;
+                    position:fixed;
+                    top:0;
+                    left:0;
+                    width:100%;
+                    height:100%;
+                    background:rgba(0,0,0,0.5);
+                    justify-content:center;
+                    align-items:center;
+                    }
+
+                .modal-content { background: var(--card); 
+                                padding: 25px; 
+                                border-radius: 20px; 
+                                width: 90%; max-width: 400px; }
 
                 /* Auth View Style */
                 .auth-container { background: var(--bg-login); display: flex; justify-content: center; min-height: 100vh; color: #111827; }
@@ -484,9 +514,8 @@
 
                 <div class="notes-header">
                 <span>⏰ Today Reminders</span>
-                <button onclick="toggleOldReminders()" class="btn-add" style="margin-top:5px;font-size:12px;width:120px"> Show/Hide Old </button>
-                <button onclick="addReminder()">➕</button>
-                
+                <button onclick="toggleOldReminders()" class="small-btn"> Show Old </button>
+                <button onclick="openReminderModal()" class="small-btn">➕1</button>
                 </div>
 
                 <div id="reminderList"></div>
@@ -553,11 +582,6 @@
         <div id="editModal">
 
 
-
-       
-
-
-
             <div class="modal-content">
                 <h2 style="margin-top:0; color:var(--income)">Edit Transaction</h2>
                 <input type="hidden" id="editId">
@@ -574,6 +598,19 @@
                     <button class="btn-add" style="margin-top:0" onclick="saveEdit()">Save</button>
                     <button class="btn-add" style="margin-top:0; background:#444;" onclick="closeModal()">Cancel</button>
                 </div>
+            </div>
+        </div>
+
+
+        <div id="reminderModal">
+            <div class="modal-content">
+            <h2>Add Reminder</h2>
+            <input type="date" id="reminderDate">
+            <input type="text" id="reminderTask" placeholder="Reminder task">
+            <div style="margin-top:10px">
+            <button onclick="saveReminder()" class="btn-add">Save</button>
+            <button onclick="closeReminderModal()" class="btn-add">Cancel</button>
+            </div>
             </div>
         </div>
 
@@ -627,15 +664,19 @@
         let sortField = "";
         let sortAsc = true;
         let filteredData = [];
-        //const API_URL = "http://rick-pc:5000/api";
+        const API_URL = "http://rick-pc:5000/api";
         //const API_URL = "https://accountancy-pro.onrender.com/api";
-        const API_URL = "/api";
+        //const API_URL = "/api";
         const SESSION_TIME = 30 * 60 * 1000;
         let BUDGET_LIMIT = 30000;
 
         function toggleOldReminders(){
 
         showOldReminders = !showOldReminders;
+
+        const btn = document.querySelector(".small-btn");
+
+        btn.innerText = showOldReminders ? "Hide Old" : "Show Old";
 
         renderReminders();
 
@@ -796,6 +837,8 @@ document.getElementById("entryModal").style.display="none";
 
         const entryModal = document.getElementById("entryModal");
         const editModal = document.getElementById("editModal");
+        const reminderModal = document.getElementById("reminderModal");
+
 
         if(e.target === entryModal){
         closeEntryModal();
@@ -803,6 +846,10 @@ document.getElementById("entryModal").style.display="none";
 
         if(e.target === editModal){
         closeModal();
+        }
+
+        if(e.target === reminderModal){
+        closeReminderModal();
         }
 
         }
@@ -860,30 +907,39 @@ renderReminders();
 
 }
 
-async function addReminder(){
+function openReminderModal(){
 
-const text = prompt("Task Name");
+    document.getElementById("reminderModal").style.display="flex";
 
-if(!text) return;
+    /* default date today */
+    document.getElementById("reminderDate").value =
+    new Date().toISOString().slice(0,10);
 
-const date = prompt("Task Date (YYYY-MM-DD)", new Date().toISOString().slice(0,10));
+}
 
-reminders.push({
-id: Date.now(),
-task: text,
-date: date
-});
+function closeReminderModal(){
+    document.getElementById("reminderModal").style.display="none";
+}
 
-await fetch(`${API_URL}/updateReminders`,{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-email:currentUser,
-reminders:reminders
-})
-});
+function saveReminder(){
 
-renderReminders();
+    const date = document.getElementById("reminderDate").value;
+    const task = document.getElementById("reminderTask").value;
+
+    if(!task) return alert("Enter task");
+
+    reminders.push({
+    id: Date.now(),
+    date: date,
+    task: task
+    });
+
+    renderReminders();
+    
+    /* clear input */
+    document.getElementById("reminderTask").value="";
+
+    closeReminderModal();
 
 }
 
