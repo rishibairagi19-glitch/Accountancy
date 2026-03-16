@@ -514,7 +514,7 @@
 
                 <div class="notes-header">
                 <span>⏰ Today Reminders</span>
-                <button onclick="toggleOldReminders()" class="small-btn"> Show Old </button>
+                <button onclick="toggleOldReminders()" id="toggleReminderBtn" class="small-btn">Show Old</button>
                 <button onclick="openReminderModal()" class="small-btn">➕1</button>
                 </div>
 
@@ -670,11 +670,24 @@
         const SESSION_TIME = 30 * 60 * 1000;
         let BUDGET_LIMIT = 30000;
 
+        function escapeHTML(str){
+        return str.replace(/[&<>"']/g,function(m){
+        return({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+        })[m];
+        });
+        }
+
         function toggleOldReminders(){
 
         showOldReminders = !showOldReminders;
 
-        const btn = document.querySelector(".notes-panel .small-btn");
+        const btn = document.getElementById("toggleReminderBtn");
+
         btn.innerText = showOldReminders ? "Hide Old" : "Show Old";
 
         renderReminders();
@@ -684,12 +697,13 @@
 
         function openEntryModal(){
 
-document.getElementById("entryModal").style.display="flex";
+        document.getElementById("entryModal").style.display="flex";
 
-/* Default current date */
-document.getElementById("pDate").valueAsDate = new Date();
+        document.getElementById("pDate").valueAsDate = new Date();
 
-}
+        document.getElementById("pName").focus();
+
+        }
 
 function closeEntryModal(){
 
@@ -727,10 +741,10 @@ document.getElementById("entryModal").style.display="none";
                 }
 
                 // notes changed
-                if(data.notes && data.notes.length > 0){
-                    notes = data.notes;
-                    renderNotes();
-                    }
+                if(newNotes !== oldNotes){
+                notes = data.notes || [];
+                renderNotes();
+                }
 
             }catch(err){
                 console.log("Sync error", err);
@@ -816,21 +830,7 @@ document.getElementById("entryModal").style.display="none";
 
     // Window Onload mein ye line add karein
 
-        window.addEventListener("DOMContentLoaded", function(){
-
-        const signUpBtn = document.getElementById("signUp");
-        const signInBtn = document.getElementById("signIn");
-        const container = document.getElementById("container");
-
-        signUpBtn.addEventListener("click", () => {
-        container.classList.add("right-panel-active");
-        });
-
-        signInBtn.addEventListener("click", () => {
-        container.classList.remove("right-panel-active");
-        });
-
-        });
+        
 
        window.onclick = function(e){
 
@@ -853,47 +853,25 @@ document.getElementById("entryModal").style.display="none";
 
         }
 
-        window.onload = async function(){
+        window.addEventListener("DOMContentLoaded", async function(){
 
-        document.getElementById("monthSelector").value = selectedMonth;
+// login animation
+const signUpBtn = document.getElementById("signUp");
+const signInBtn = document.getElementById("signIn");
+const container = document.getElementById("container");
 
-        if(localStorage.getItem("rickTheme") === 'light'){
-            document.body.classList.add('light-mode');
-        }
+signUpBtn.addEventListener("click", () => {
+container.classList.add("right-panel-active");
+});
 
-        updateThemeIcon();
+signInBtn.addEventListener("click", () => {
+container.classList.remove("right-panel-active");
+});
 
-        const savedUser = localStorage.getItem("rickUser");
+// dashboard init
+document.getElementById("monthSelector").value = selectedMonth;
 
-        if(savedUser){
-
-        currentUser = savedUser;
-
-        document.getElementById('auth-view').style.display = 'none';
-        document.getElementById('dashboard-view').style.display = 'block';
-
-        document.getElementById('pDate').valueAsDate = new Date();
-
-        const res = await fetch(`${API_URL}/getUser?email=${currentUser}`);
-        const data = await res.json();
-
-        db = data.ledger_data || [];
-        notes = data.notes || [];
-        USER_VERIFIED = data.verified || false;
-
-        document.getElementById("userEmail").innerText = currentUser;
-        document.getElementById("verifyBadge").innerHTML =
-        USER_VERIFIED ? "✅ VERIFIED" : "⚠ FREE USER";
-
-        render();
-        renderNotes();
-        loadReminders();
-        }
-
-       
-        setInterval(syncFromServer, 5000);
-
-        }
+});
 
         async function loadReminders(){
 
@@ -920,12 +898,22 @@ function closeReminderModal(){
     document.getElementById("reminderModal").style.display="none";
 }
 
-async function saveReminder(){
+function saveReminder(){
 
 const date = document.getElementById("reminderDate").value;
 const task = document.getElementById("reminderTask").value;
 
-if(!task) return alert("Enter task");
+const today = new Date().toISOString().slice(0,10);
+
+if(date < today){
+alert("Past date not allowed");
+return;
+}
+
+if(!task){
+alert("Enter task");
+return;
+}
 
 reminders.push({
 id: Date.now(),
@@ -933,18 +921,11 @@ date: date,
 task: task
 });
 
-await fetch(`${API_URL}/updateReminders`,{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-email:currentUser,
-reminders:reminders
-})
-});
-
 renderReminders();
+
 document.getElementById("reminderTask").value="";
 closeReminderModal();
+
 }
 
 async function editReminder(id){
@@ -991,26 +972,23 @@ renderReminders();
 
 }
 
-document.addEventListener("keydown", function(e){
+        document.addEventListener("keydown", function(e){
 
-const modal = document.getElementById("reminderModal");
+        const modal = document.getElementById("reminderModal");
 
-/* check popup open hai ya nahi */
-if(modal.style.display === "flex"){
+        if(modal.style.display === "flex"){
 
-// ENTER → Save reminder
-if(e.key === "Enter"){
-saveReminder();
-}
+        if(e.key === "Enter" && document.activeElement.id === "reminderTask"){
+        saveReminder();
+        }
 
-// ESC → Cancel
-if(e.key === "Escape"){
-closeReminderModal();
-}
+        if(e.key === "Escape"){
+        closeReminderModal();
+        }
 
-}
+        }
 
-});
+        });
 
         function renderReminders(){
 
@@ -1041,7 +1019,7 @@ closeReminderModal();
 
         <span>
         ${isToday ? "🔥 TODAY -" : "📅 "+r.date+" -"} 
-        ${r.task}
+        ${escapeHTML(r.task)}
         </span>
 
         <div class="note-actions">
@@ -1277,7 +1255,7 @@ closeReminderModal();
 
             // ❌ Prevent Duplicate (same name, amount, date, type)
             const alreadyExists = db.some(item => 
-                item.n === n && 
+                item.n.toLowerCase() === n.toLowerCase() && 
                 item.a === a && 
                 item.d === d && 
                 item.t === t
@@ -1293,7 +1271,7 @@ closeReminderModal();
             const month = d.slice(0,7); // 2026-03 format
 
         db.unshift({ 
-            id: Date.now().toString().slice(-6), 
+            id: crypto.randomUUID(), 
             n, a, d, t,
             m: month
         });
@@ -1332,7 +1310,7 @@ closeReminderModal();
 
     list.innerHTML += `
     <div class="note-item">
-    <span>${n}</span>
+    <span>${escapeHTML(n)}</span>
 
     <div class="note-actions">
     <span onclick="editNote(${i})">✏</span>
@@ -1389,7 +1367,9 @@ closeReminderModal();
             let tInc = 0, tExp = 0, tLent = 0, tRec = 0;
             filteredData = [];
 
-            displayData.forEach(i => {
+            const calcData = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
+
+            calcData.forEach(i=>{
 
                 const itemMonth = i.m || i.d.slice(0,7);
 
@@ -1407,7 +1387,7 @@ closeReminderModal();
                     filteredData.push(i);
                     let color = (i.t==='inc'||i.t==='rec') ? 'var(--s)' : 'var(--d)';
                     body.innerHTML += `<tr>
-                    <td><b>${i.n}</b></td>
+                    <td><b>${escapeHTML(i.n)}</b></td>
                     <td style="color:${color}">${(i.t==='inc'||i.t==='rec')?'+':'-'}₹${i.a}</td>
                     <td>${i.d}</td>
                     <td><span style="color:orange; cursor:pointer;" onclick="openEdit('${i.id}')">✎</span></td>
@@ -1458,7 +1438,7 @@ closeReminderModal();
         async function saveEdit() {
             const id = document.getElementById('editId').value;
             const n = document.getElementById('editName').value;
-            const a = document.getElementById('editAmt').value;
+            const a = parseFloat(document.getElementById('editAmt').value);
             const d = document.getElementById('editDate').value;
             const t = document.getElementById('editType').value;
             const res = await fetch(`${API_URL}/edit`, {
