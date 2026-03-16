@@ -674,8 +674,7 @@
 
         showOldReminders = !showOldReminders;
 
-        const btn = document.querySelector(".small-btn");
-
+        const btn = document.querySelector(".notes-panel .small-btn");
         btn.innerText = showOldReminders ? "Hide Old" : "Show Old";
 
         renderReminders();
@@ -921,26 +920,31 @@ function closeReminderModal(){
     document.getElementById("reminderModal").style.display="none";
 }
 
-function saveReminder(){
+async function saveReminder(){
 
-    const date = document.getElementById("reminderDate").value;
-    const task = document.getElementById("reminderTask").value;
+const date = document.getElementById("reminderDate").value;
+const task = document.getElementById("reminderTask").value;
 
-    if(!task) return alert("Enter task");
+if(!task) return alert("Enter task");
 
-    reminders.push({
-    id: Date.now(),
-    date: date,
-    task: task
-    });
+reminders.push({
+id: Date.now(),
+date: date,
+task: task
+});
 
-    renderReminders();
-    
-    /* clear input */
-    document.getElementById("reminderTask").value="";
+await fetch(`${API_URL}/updateReminders`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+email:currentUser,
+reminders:reminders
+})
+});
 
-    closeReminderModal();
-
+renderReminders();
+document.getElementById("reminderTask").value="";
+closeReminderModal();
 }
 
 async function editReminder(id){
@@ -986,6 +990,27 @@ reminders:reminders
 renderReminders();
 
 }
+
+document.addEventListener("keydown", function(e){
+
+const modal = document.getElementById("reminderModal");
+
+/* check popup open hai ya nahi */
+if(modal.style.display === "flex"){
+
+// ENTER → Save reminder
+if(e.key === "Enter"){
+saveReminder();
+}
+
+// ESC → Cancel
+if(e.key === "Escape"){
+closeReminderModal();
+}
+
+}
+
+});
 
         function renderReminders(){
 
@@ -1381,13 +1406,13 @@ renderReminders();
                 if(matchName && matchType && matchDate) {
                     filteredData.push(i);
                     let color = (i.t==='inc'||i.t==='rec') ? 'var(--s)' : 'var(--d)';
-                    body.innerHTML = `<tr>
-                        <td><b>${i.n}</b></td>
-                        <td style="color:${color}">${(i.t==='inc'||i.t==='rec')?'+':'-'}₹${i.a}</td>
-                        <td>${i.d}</td>
-                        <td><span style="color:orange; cursor:pointer;" onclick="openEdit('${i.id}')">✎</span></td>
-                        <td><span style="color:red; cursor:pointer;" onclick="deleteItem('${i.id}')">🗑</span></td>
-                    </tr>` + body.innerHTML;
+                    body.innerHTML += `<tr>
+                    <td><b>${i.n}</b></td>
+                    <td style="color:${color}">${(i.t==='inc'||i.t==='rec')?'+':'-'}₹${i.a}</td>
+                    <td>${i.d}</td>
+                    <td><span style="color:orange; cursor:pointer;" onclick="openEdit('${i.id}')">✎</span></td>
+                    <td><span style="color:red; cursor:pointer;" onclick="deleteItem('${i.id}')">🗑</span></td>
+                    </tr>`;
                 }
             });
 
