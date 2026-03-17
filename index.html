@@ -670,18 +670,18 @@
         const SESSION_TIME = 30 * 60 * 1000;
         let BUDGET_LIMIT = 30000;
 
-        function escapeHTML(str){
-        return str.replace(/[&<>"']/g,function(m){
-        return({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
-        })[m];
-        });
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.toString().replace(/[&<>"']/g, function(m) {
+                return ({
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                })[m];
+            });
         }
-
 
         function toggleOldReminders(){
 
@@ -1364,86 +1364,70 @@ closeReminderModal();
     }
 
         function render() {
-
             const currentMonth = selectedMonth;
-            const monthlyEntries = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
-
-            const remaining = ENTRY_LIMIT - monthlyEntries.length;
-
-            if(!USER_VERIFIED){
-                const msgBox = document.getElementById("freeLimitMsg");
-
-                if(remaining > 0){
-                    msgBox.innerHTML = `Free account: ${remaining} entries left this month`;
-                    msgBox.style.color = "orange";
-                }else{
-                    msgBox.innerHTML = "Free limit reached (30 entries/month)";
-                    msgBox.style.color = "red";
-                }
-            }else{
-                document.getElementById("freeLimitMsg").innerHTML = "";
-            }
-        
-
-            
             const body = document.getElementById('ledgerBody');
             const sN = document.getElementById('sName').value.toLowerCase();
             const sT = document.getElementById('sType').value;
             const sF = document.getElementById('sFrom').value;
             const sTo = document.getElementById('sTo').value;
 
-            body.innerHTML = '';
-
-            let displayData;
-
-            if(sN || sT || sF || sTo){
-                // search active → all months
-                displayData = db;
-            }else{
-                // normal dashboard → selected month
-                displayData = db.filter(i => (i.m || i.d.slice(0,7)) === currentMonth);
-            }
+            body.innerHTML = ''; 
             let tInc = 0, tExp = 0, tLent = 0, tRec = 0;
             filteredData = [];
 
+            // Filter Data Logic
+            let displayData = (sN || sT || sF || sTo) 
+                ? db 
+                : db.filter(i => (i.m || i.d.slice(0, 7)) === currentMonth);
+
             displayData.forEach(i => {
-
-                const itemMonth = i.m || i.d.slice(0,7);
-
-            
-                if(i.t==='inc') tInc+=i.a;
-                if(i.t==='exp') tExp+=i.a;
-                if(i.t==='lent') tLent+=i.a;
-                if(i.t==='rec') tRec+=i.a;
+                // Stats calculations
+                if ((i.m || i.d.slice(0,7)) === currentMonth) {
+                    if (i.t === 'inc') tInc += i.a;
+                    if (i.t === 'exp') tExp += i.a;
+                    if (i.t === 'lent') tLent += i.a;
+                    if (i.t === 'rec') tRec += i.a;
+                }
 
                 const matchName = i.n.toLowerCase().includes(sN);
                 const matchType = sT === "" || i.t === sT;
                 const matchDate = (!sF || i.d >= sF) && (!sTo || i.d <= sTo);
 
-                if(matchName && matchType && matchDate) {
+                if (matchName && matchType && matchDate) {
                     filteredData.push(i);
-                    let color = (i.t==='inc'||i.t==='rec') ? 'var(--s)' : 'var(--d)';
-                    body.innerHTML = `<tr>
-                        <td><b>${i.n}</b></td>
-                        <td style="color:${color}">${(i.t==='inc'||i.t==='rec')?'+':'-'}₹${i.a}</td>
+                    let color = (i.t === 'inc' || i.t === 'rec') ? 'var(--s)' : 'var(--d)';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><b>${escapeHTML(i.n)}</b></td>
+                        <td style="color:${color}">${(i.t === 'inc' || i.t === 'rec') ? '+' : '-'}₹${i.a}</td>
                         <td>${i.d}</td>
                         <td><span style="color:orange; cursor:pointer;" onclick="openEdit('${i.id}')">✎</span></td>
                         <td><span style="color:red; cursor:pointer;" onclick="deleteItem('${i.id}')">🗑</span></td>
-                    </tr>` + body.innerHTML;
+                    `;
+                    body.appendChild(tr);
                 }
             });
 
-            localStorage.setItem("rickData", JSON.stringify(db));
-
-            // Update 6 Boxes
-            document.getElementById('netBal').innerText = `₹${(tInc+tRec)-(tExp+tLent)}`;
+            // Update Stats Boxes
+            document.getElementById('netBal').innerText = `₹${(tInc + tRec) - (tExp + tLent)}`;
             document.getElementById('totalInc').innerText = `₹${tInc}`;
             document.getElementById('totalExp').innerText = `₹${tExp}`;
             document.getElementById('totalLent').innerText = `₹${tLent}`;
             document.getElementById('totalRec').innerText = `₹${tRec}`;
             document.getElementById('realSav').innerText = `₹${tInc - tExp}`;
 
-           }
+            // Free Limit Logic
+            if (!USER_VERIFIED) {
+                const monthlyCount = db.filter(i => (i.m || i.d.slice(0, 7)) === currentMonth).length;
+                const remaining = ENTRY_LIMIT - monthlyCount;
+                const msgBox = document.getElementById("freeLimitMsg");
+                msgBox.innerHTML = remaining > 0 
+                    ? `Free account: ${remaining} entries left this month` 
+                    : "Free limit reached (30 entries/month)";
+                msgBox.style.color = remaining > 0 ? "orange" : "red";
+            }
+        }
 
         // Logic for Edit/Delete/PDF remains same as your original code
         async function deleteItem(id) {
