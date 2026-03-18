@@ -1435,13 +1435,20 @@ closeReminderModal();
 
             // Filter Data Logic
             displayData = db.filter(i => {
-            const matchMonth = (i.m || i.d.slice(0, 7)) === currentMonth;
-            const matchName = i.n.toLowerCase().includes(sN);
-            const matchType = sT === "" || i.t === sT;
-            const matchDate = (!sF || i.d >= sF) && (!sTo || i.d <= sTo);
+    const matchMonth = (i.m || i.d.slice(0, 7)) === currentMonth;
+    const matchName = i.n.toLowerCase().includes(sN);
 
-            return matchMonth && matchName && matchType && matchDate;
-        });
+    let matchType;
+    if(sT === "lent" || sT === "rec"){
+        matchType = (i.t === "lent" || i.t === "rec"); // ✅ dono include
+    }else{
+        matchType = sT === "" || i.t === sT;
+    }
+
+    const matchDate = (!sF || i.d >= sF) && (!sTo || i.d <= sTo);
+
+    return matchMonth && matchName && matchType && matchDate;
+});
 
 // ONLY show summary when lent filter selected
 if(sT === "lent" || sT === "rec"){
@@ -1484,21 +1491,10 @@ if(sT === "lent" || sT === "rec"){
                     if (i.t === 'inc') tInc += i.a;
                     if (i.t === 'exp') tExp += i.a;
                     if (i.t === 'lent') tLent += i.a;
-                    if (i.t === 'rec') tRec += i.a;let matchType;
-
-                if(sT === "lent" || sT === "rec"){
-                    // dono include karo
-                    matchType = (i.t === "lent" || i.t === "rec");
-                }else{
-                    matchType = sT === "" || i.t === sT;
-                }
+                    if (i.t === 'rec') tRec += i.a;
                 }
 
-                const matchName = i.n.toLowerCase().includes(sN);
-                const matchType = sT === "" || i.t === sT;
-                const matchDate = (!sF || i.d >= sF) && (!sTo || i.d <= sTo);
-
-                if (matchName && matchType && matchDate) {
+                {
                     filteredData.push(i);
                     let color = (i.t === 'inc' || i.t === 'rec') ? 'var(--s)' : 'var(--d)';
                     
