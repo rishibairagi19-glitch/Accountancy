@@ -655,6 +655,7 @@
 
         let notes = [];   
         let reminders = []; 
+        let displayData = [];
         let currentUser = null, db = [];
         let USER_VERIFIED = false;
         let ENTRY_LIMIT = 30;
@@ -1339,31 +1340,88 @@ closeReminderModal();
             closeEntryModal();
         }
 
-        function renderNotes(){
+                function renderNotes(){
 
-    const list = document.getElementById("notesList");
+            const list = document.getElementById("notesList");
 
-    list.innerHTML = "";
+            list.innerHTML = "";
 
-    notes.forEach((n,i)=>{
+            notes.forEach((n,i)=>{
 
-    list.innerHTML += `
-    <div class="note-item">
-    <span>${n}</span>
+            list.innerHTML += `
+            <div class="note-item">
+            <span>${n}</span>
 
-    <div class="note-actions">
-    <span onclick="editNote(${i})">✏</span>
-    <span onclick="deleteNote(${i})">🗑</span>
-    </div>
+            <div class="note-actions">
+            <span onclick="editNote(${i})">✏</span>
+            <span onclick="deleteNote(${i})">🗑</span>
+            </div>
 
-    </div>
-    `;
+            </div>
+            `;
 
-    });
+            });
 
-    }
+            }
 
-        function render() {
+
+            function getLentSummary(data){
+
+            const summary = {};
+
+            data.forEach(i => {
+
+                if(i.t === "lent" || i.t === "rec"){
+
+                    if(!summary[i.n]){
+                        summary[i.n] = 0;
+                    }
+
+                    if(i.t === "lent"){
+                        summary[i.n] += i.a;
+                    }
+
+                    if(i.t === "rec"){
+                        summary[i.n] -= i.a;
+                    }
+
+                }
+
+            });
+
+            return summary;
+        }
+
+            function showDetails(name){
+
+            const body = document.getElementById('ledgerBody');
+            body.innerHTML = "";
+
+            const userData = displayData.filter(i => i.n === name);
+
+            userData.forEach(i => {
+
+                let color = (i.t === 'inc' || i.t === 'rec') ? 'var(--s)' : 'var(--d)';
+
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                    <td><b>${i.n}</b></td>
+                    <td style="color:${color}">
+                        ${(i.t === 'inc' || i.t === 'rec') ? '+' : '-'}₹${i.a}
+                    </td>
+                    <td>${i.d}</td>
+                    <td>${i.t}</td>
+                    <td></td>
+                `;
+
+                body.appendChild(tr);
+
+            });
+
+        }
+        
+            function render() {
             const currentMonth = selectedMonth;
             const body = document.getElementById('ledgerBody');
             const sN = document.getElementById('sName').value.toLowerCase();
@@ -1376,9 +1434,47 @@ closeReminderModal();
             filteredData = [];
 
             // Filter Data Logic
-            let displayData = (sN || sT || sF || sTo) 
-                ? db 
-                : db.filter(i => (i.m || i.d.slice(0, 7)) === currentMonth);
+            displayData = db.filter(i => {
+            const matchMonth = (i.m || i.d.slice(0, 7)) === currentMonth;
+            const matchName = i.n.toLowerCase().includes(sN);
+            const matchType = sT === "" || i.t === sT;
+            const matchDate = (!sF || i.d >= sF) && (!sTo || i.d <= sTo);
+
+            return matchMonth && matchName && matchType && matchDate;
+        });
+
+                if(sT === "lent"){
+
+                document.getElementById('netBal').innerText = "";
+                document.getElementById('totalInc').innerText = "";
+                document.getElementById('totalExp').innerText = "";
+
+                const summary = getLentSummary(displayData);
+                body.innerHTML = "";
+
+                Object.keys(summary).forEach(name => {
+
+                    const bal = summary[name];
+
+                    if(bal === 0) return;
+
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+                        <td><b style="cursor:pointer; color:var(--p)" onclick="showDetails('${name.replace(/'/g, "\\'")}')">${name}</b></td>
+                        <td style="color:${bal > 0 ? 'red' : 'green'}">
+                            ₹${Math.abs(bal)}
+                        </td>
+                        <td colspan="3">
+                            ${bal > 0 ? "You will get" : "You owe"}
+                        </td>
+                    `;
+
+                    body.appendChild(tr);
+                });
+
+                return; // ⚠️ ab sirf lent case me hi chalega
+            }
 
             displayData.forEach(i => {
                 // Stats calculations
