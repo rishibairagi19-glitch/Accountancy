@@ -1484,7 +1484,14 @@ if(sT === "lent" || sT === "rec"){
                     if (i.t === 'inc') tInc += i.a;
                     if (i.t === 'exp') tExp += i.a;
                     if (i.t === 'lent') tLent += i.a;
-                    if (i.t === 'rec') tRec += i.a;
+                    if (i.t === 'rec') tRec += i.a;let matchType;
+
+                if(sT === "lent" || sT === "rec"){
+                    // dono include karo
+                    matchType = (i.t === "lent" || i.t === "rec");
+                }else{
+                    matchType = sT === "" || i.t === sT;
+                }
                 }
 
                 const matchName = i.n.toLowerCase().includes(sN);
