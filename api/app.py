@@ -38,7 +38,8 @@ def create_default_user():
                 "password": DEFAULT_PASSWORD,
                 "verified": True,
                 "ledger_data": [],
-                "notes": []
+                "notes": [],
+                "reminders": []
             }).execute()
             print("--- Default user created successfully ---")
         else:
@@ -74,7 +75,8 @@ def register():
             "password": password,
             "verified": False,
             "ledger_data": [],
-            "notes": []
+            "notes": [],
+            "reminders": []
         }).execute()
 
         return jsonify({
@@ -93,34 +95,33 @@ def login():
         email = data.get("email")
         password = data.get("password")
 
-        res = supabase.table("users") \
+        # 1. Check user by email
+        user_res = supabase.table("users") \
             .select("*") \
             .eq("email", email) \
-            .eq("password", password) \
             .execute()
 
-         # Check existing
-        existingu = supabase.table("users").select("*").eq("email", email).execute()
-        existingp = supabase.table("users").select("*").eq("password", password).execute()
-        
-        if not existingu.data:
+        if not user_res.data:
             return jsonify({"message": "Wrong User Name"}), 400
-        if not existingp.data:
+
+        user = user_res.data[0]
+
+        # 2. Check password for that user only
+        if user["password"] != password:
             return jsonify({"message": "Wrong Password"}), 401
 
-        if res.data and len(res.data) > 0:
-            return jsonify({
-                "email": res.data[0]["email"],
-                "verified": res.data[0]["verified"],
-                "ledger_data": res.data[0]["ledger_data"],
-                "notes": res.data[0].get("notes", [])
-            })
-
-        return jsonify({"error": "Invalid credentials"}), 401
+        # 3. Success login
+        return jsonify({
+            "email": user["email"],
+            "verified": user["verified"],
+            "ledger_data": user["ledger_data"],
+            "notes": user.get("notes", []),
+            "reminders": user.get("reminders", [])
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+        
 
 @app.route("/api/check_verified", methods=["POST"])
 def check_verified():
@@ -241,8 +242,28 @@ def update_notes():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-    # ---------------- GET USER ----------------
+
+
+# ---------------- UPDATE REMINDERS ----------------
+@app.route("/api/updateReminders", methods=["POST"])
+def update_reminders():
+    try:
+        data = request.json
+        email = data.get("email")
+        reminders = data.get("reminders")
+
+        supabase.table("users") \
+            .update({"reminders": reminders}) \
+            .eq("email", email) \
+            .execute()
+
+        return jsonify({"status": "ok"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------- GET USER ----------------
 @app.route("/api/getUser", methods=["GET"])
 def get_user():
     try:
@@ -260,9 +281,4 @@ def get_user():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-# ---------------- RUN SERVER ----------------
-if __name__ == "__main__":
-    # Render/Railway automatically sets PORT
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+
