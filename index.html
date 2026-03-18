@@ -1443,38 +1443,40 @@ closeReminderModal();
             return matchMonth && matchName && matchType && matchDate;
         });
 
-                if(sT === "lent"){
+// ONLY show summary when lent filter selected
+if(sT === "lent" || sT === "rec"){
 
-                document.getElementById('netBal').innerText = "";
-                document.getElementById('totalInc').innerText = "";
-                document.getElementById('totalExp').innerText = "";
+    const summary = getLentSummary(displayData);
+    body.innerHTML = "";
 
-                const summary = getLentSummary(displayData);
-                body.innerHTML = "";
+    Object.keys(summary).forEach(name => {
 
-                Object.keys(summary).forEach(name => {
+        const bal = summary[name];
+        if(bal === 0) return;
 
-                    const bal = summary[name];
+        const tr = document.createElement("tr");
 
-                    if(bal === 0) return;
+        tr.innerHTML = `
+            <td>
+                <b style="cursor:pointer; color:var(--p)" 
+                onclick="showDetails('${name.replace(/'/g, "\\'")}')">
+                ${name}
+                </b>
+            </td>
+            <td style="color:${bal > 0 ? 'red' : 'green'}">
+                ₹${Math.abs(bal)}
+            </td>
+            <td colspan="3">
+                ${bal > 0 ? "You will get" : "You owe"}
+            </td>
+        `;
 
-                    const tr = document.createElement("tr");
+        body.appendChild(tr);
+    });
 
-                    tr.innerHTML = `
-                        <td><b style="cursor:pointer; color:var(--p)" onclick="showDetails('${name.replace(/'/g, "\\'")}')">${name}</b></td>
-                        <td style="color:${bal > 0 ? 'red' : 'green'}">
-                            ₹${Math.abs(bal)}
-                        </td>
-                        <td colspan="3">
-                            ${bal > 0 ? "You will get" : "You owe"}
-                        </td>
-                    `;
+    return; // yaha return sahi hai
+}
 
-                    body.appendChild(tr);
-                });
-
-                return; // ⚠️ ab sirf lent case me hi chalega
-            }
 
             displayData.forEach(i => {
                 // Stats calculations
