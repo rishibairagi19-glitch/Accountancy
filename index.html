@@ -127,7 +127,7 @@
                 border:none;
                 padding:12px;
                 margin:8px 0;
-                width:150px;
+                width:100%;
                 }
 
                 button{
@@ -391,7 +391,7 @@
                 .progress-bg { background: rgba(0,0,0,0.2); height: 12px; border-radius: 10px; overflow: hidden; }
                 .progress-fill { background: var(--p); height: 100%; width: 0%; transition: 0.5s width ease-in-out; }
 
-                .dash-input, .dash-select, .s-input { width: 100%; background: var(--input-bg); border: 1px solid #444; color: var(--text); padding: 12px; border-radius: 10px; margin-top: 8px; outline: none; }
+                
                 .entry-form, .search-panel, .table-container { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
                 
                 .btn-main, .btn-add, .btn-pdf { cursor: pointer; border: none; font-weight: bold; }
@@ -424,7 +424,7 @@
                                 width: 90%; max-width: 400px; }
 
                 /* Auth View Style */
-                .auth-container { background: var(--bg-login); display: flex; justify-content: center; min-height: 100vh; color: #111827; }
+                
                 .iphone-ui { width: 100%; max-width: 430px; padding: 40px 24px; }
                 .btn-main { width: 100%; background: var(--primary); color: white; padding: 18px; border-radius: 15px; font-size: 16px; }
             </style>
@@ -520,8 +520,8 @@
 
                 <div class="notes-header">
                 <span>⏰ Today Reminders</span>
-                <button onclick="toggleOldReminders()" class="small-btn"> Show Old </button>
                 <button onclick="openReminderModal()" class="small-btn">➕1</button>
+                <button onclick="toggleOldReminders()" class="small-btn">Show Old</button>
                 </div>
 
                 <div id="reminderList"></div>
@@ -703,7 +703,7 @@
 
         showOldReminders = !showOldReminders;
 
-        const btn = document.querySelector(".small-btn");
+        const btn = document.querySelector(".notes-header button:nth-child(2)");
 
         btn.innerText = showOldReminders ? "Hide Old" : "Show Old";
 
@@ -757,7 +757,7 @@ document.getElementById("entryModal").style.display="none";
                 }
 
                 // notes changed
-                if(data.notes && data.notes.length > 0){
+                if(data.notes){
                     notes = data.notes;
                     renderNotes();
                     }
@@ -883,7 +883,7 @@ document.getElementById("entryModal").style.display="none";
 
         }
 
-        window.onload = async function(){
+        window.addEventListener("load", async function(){
 
         document.getElementById("monthSelector").value = selectedMonth;
 
@@ -921,7 +921,7 @@ document.getElementById("entryModal").style.display="none";
         }
 
        
-        setInterval(syncFromServer, 5000);
+        setInterval(syncFromServer, 10000);
 
         }
 
@@ -952,10 +952,10 @@ function closeReminderModal(){
 
 async function saveReminder() {
     const date = document.getElementById("reminderDate").value;
-    const task = document.getElementById("reminderTask").value;
+    const task = document.getElementById("reminderTask").value.trim();
     const today = new Date().toISOString().slice(0, 10);
 
-    if (date < today) {
+    if (new Date(date) < new Date(today)) {
         alert("Bhai, purani date ka reminder nahi dal sakte!");
         return;
     }
@@ -1365,7 +1365,7 @@ closeReminderModal();
 
             list.innerHTML += `
             <div class="note-item">
-            <span>${n}</span>
+            <span>${escapeHTML(n)}</span>
 
             <div class="note-actions">
             <span onclick="editNote(${i})">✏</span>
@@ -1523,7 +1523,7 @@ if(sT === "lent" || sT === "rec"){
                     if (i.t === 'rec') tRec += i.a;
                 }
 
-                {
+                
                     filteredData.push(i);
                     let color = (i.t === 'inc' || i.t === 'rec') ? 'var(--s)' : 'var(--d)';
                     
@@ -1536,7 +1536,7 @@ if(sT === "lent" || sT === "rec"){
                         <td><span style="color:red; cursor:pointer;" onclick="deleteItem('${i.id}')">🗑</span></td>
                     `;
                     body.appendChild(tr);
-                }
+                
             });
 
             // Update Stats Boxes
